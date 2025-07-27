@@ -6,6 +6,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MenuModule } from './menu/menu.module';
+import { StockBaseModule } from './basecode/stock-base.module';
+import { InboundModule } from './inbound/inbound.module';
+import { OutboundModule } from './outbound/outbound.module';
 
 @Module({
   imports: [
@@ -28,6 +31,11 @@ import { MenuModule } from './menu/menu.module';
     AuthModule,
     UsersModule,
     MenuModule,
+    StockBaseModule,
+    InboundModule,
+    OutboundModule,
+    
+    
     // VisitorCountModule,
   ],
   controllers: [AppController],

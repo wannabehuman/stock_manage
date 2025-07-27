@@ -1,0 +1,71 @@
+/* Toast UI Grid 사용자 정의 스타일 */
+.tui-grid-container {
+  font-family: 'Noto Sans KR', sans-serif;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 헤더 스타일 */
+.tui-grid-header-area {
+  background-color: #f5f6fa;
+  border-bottom: 2px solid #e0e4ea;
+}
+
+.tui-grid-header-area .tui-grid-cell {
+  font-weight: 600;
+  color: #495057;
+  height: 45px;
+}
+
+/* 그리드 셀 스타일 */
+.tui-grid-body-area .tui-grid-cell {
+  padding: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+/* 행 하이라이트 효과 */
+.tui-grid-body-area .tui-grid-row:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* 버튼 스타일 */
+.tui-grid-body-area .edit-btn,
+.tui-grid-body-area .delete-btn {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: none;
+  margin: 0 2px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.tui-grid-body-area .edit-btn {
+  background-color: #36a2eb;
+  color: white;
+}
+
+.tui-grid-body-area .edit-btn:hover {
+  background-color: #2987cc;
+}
+
+.tui-grid-body-area .delete-btn {
+  background-color: #ff6384;
+  color: white;
+}
+
+.tui-grid-body-area .delete-btn:hover {
+  background-color: #e95370;
+}
+
+/* 짝수/홀수 행 색상 구분 */
+.tui-grid-body-area .tui-grid-row-even {
+  background-color: #fafbfc;
+}
+
+/* 비어있는 그리드 메시지 */
+.tui-grid-body-area .tui-grid-empty-message {
+  padding: 20px;
+  text-align: center;
+  color: #868e96;
+}

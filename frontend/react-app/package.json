@@ -10,16 +10,28 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/cache": "^11.10.8",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.2.5",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
+    "@mui/x-data-grid": "^8.9.1",
+    "@mui/x-date-pickers": "^8.9.0",
     "axios": "^1.9.0",
+    "chart.js": "^4.3.0",
+    "chroma-js": "^2.4.2",
+    "dayjs": "^1.11.13",
     "formik": "^2.4.6",
+    "prop-types": "^15.8.1",
     "react": "^19.1.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.1",
+    "react-tabulator": "^0.21.0",
+    "stylis": "^4.1.4",
+    "stylis-plugin-rtl": "^2.1.1",
+    "tabulator-tables": "^6.3.1",
     "yup": "^1.6.1"
   },
   "devDependencies": {
