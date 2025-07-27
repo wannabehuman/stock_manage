@@ -30,13 +30,13 @@ const routes = [
     route: "/outbound",
     component: Outbound,
   },
-  {
-    type: "collapse",
-    name: "재고 현황",
-    key: "stock",
-    route: "/stock",
-    component: Dashboard,
-  },
+  // {
+  //   type: "collapse",
+  //   name: "재고 현황",
+  //   key: "stock",
+  //   route: "/stock",
+  //   component: Dashboard,
+  // },
 
   {
     type: "collapse",

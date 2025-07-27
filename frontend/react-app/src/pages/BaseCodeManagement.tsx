@@ -16,18 +16,15 @@ import {
   Select,
   InputLabel,
   Grid,
-  FormHelperText,
-  Card
+  FormHelperText
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import { DataGrid } from '@mui/x-data-grid';
-import type { GridRenderCellParams } from '@mui/x-data-grid';
 import { baseCodeService } from '../services/baseCode.service';
-
-// Material Dashboard 2 React components
 import MDBox from '../md-components/MDBox/index.jsx';
 import MDButton from '../md-components/MDButton/index.jsx';
 import MDTypography from '../md-components/MDTypography/index.jsx';
+import { Card } from '@mui/material';
 
 // 기준정보(코드) 타입 정의
 interface BaseCode {
@@ -88,9 +85,12 @@ const initialBaseCodes: BaseCode[] = [
 
 // 카테고리 타입
 const categoryOptions = [
-  { value: 'ITEM_TYPE', label: '품목 유형' },
-  { value: 'MNGMT_TYPE', label: '관리 유형' },
-  { value: 'UNIT', label: '단위' }
+  { value: 'GONGINDAN', label: '공진단' },
+  { value: 'GYEONGOKGO', label: '경옥고' },
+  { value: 'DIET', label: '다이어트' },
+  { value: 'MEDICINE', label: '상비약' },
+  { value: 'LIFE', label: '생활한약' },
+  { value: 'ETC', label: '기타' }
 ];
 
 const BaseCodeManagement: React.FC = () => {
@@ -160,7 +160,7 @@ const BaseCodeManagement: React.FC = () => {
       field: 'isAlert', 
       headerName: '알림 여부', 
       width: 100,
-      renderCell: (params: GridRenderCellParams<any, BaseCode>) => {
+      renderCell: (params: any) => {
         return params.value ? (
           <span style={{ color: 'green' }}>✔️ 사용</span>
         ) : (
@@ -174,7 +174,7 @@ const BaseCodeManagement: React.FC = () => {
       width: 200,
       sortable: false,
       filterable: false,
-      renderCell: (params: GridRenderCellParams<any, BaseCode>) => {
+      renderCell: (params: any) => {
         return (
           <>
             <Button
@@ -337,29 +337,32 @@ const BaseCodeManagement: React.FC = () => {
   
   return (
     <MDBox py={3}>
-      <Card sx={{ p: 3, mb: 3 }}>
-        <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <MDTypography variant="h6" fontWeight="medium">
-            기준정보 관리
-          </MDTypography>
-        </MDBox>
-
-        <Grid container spacing={2} sx={{ mb: 3, alignItems: 'center' }}>
-          <Grid item xs={12} md={8}>
+      <Card sx={{ p: 3, mb: 3, backgroundColor: 'white' }}>
+        <MDBox display="flex" gap={2} alignItems="center">
           <TextField
             select
             label="카테고리 선택"
-            fullWidth
+            defaultValue= ''
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
+            size="medium"
             sx={{ 
-              width: 250,
+              minWidth: 250,
               '& .MuiSelect-select': {
                 display: 'flex',
                 alignItems: 'center'
+              },
+              '& .MuiInputBase-root': {
+                height: '44px !important', // 다른 컴포넌트와 동일한 높이
+              },
+              '& .MuiOutlinedInput-input': {
+                // padding: '16.5px 14px', // 표준 TextField 패딩
               }
             }}
           >
+            <MenuItem value="">
+              <em>전체 카테고리</em>
+            </MenuItem>
             {categoryOptions.map((option) => (
               <MenuItem 
                 key={option.value} 
@@ -372,31 +375,58 @@ const BaseCodeManagement: React.FC = () => {
               </MenuItem>
             ))}
           </TextField>
-          </Grid>
-          <Grid item xs={12} md={4}>
+          <MDButton variant="gradient" color="info" onClick={() => setSelectedCategory('')}>
+            전체 보기
+          </MDButton>
+        </MDBox>
+      </Card>
+
+      <Card sx={{ p: 3, height: '68vh', backgroundColor: 'white' }}>
+        <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <MDTypography variant="h6" fontWeight="medium">
+            기준코드 관리
+          </MDTypography>
+          <MDBox display="flex" gap={2}>
             <MDButton
               variant="gradient"
               color="success"
               onClick={handleAdd}
-              fullWidth
-              >
+            >
               ➕ 새 코드 추가
             </MDButton>
-          </Grid>
-        </Grid>
-      </Card>
-
-      <Card sx={{ p: 3 }}>
+          </MDBox>
+        </MDBox>
         <MDBox sx={{ 
-          height: '70vh', // 뷰포트 기준 높이로 변경
+          height: 'calc(68vh - 80px)', // 헤더 높이만큼 빼기
           width: '100%',
-          minHeight: 400, // 최소 높이 보장
+          minHeight: 300, // 최소 높이 조정
           '& .MuiDataGrid-root': {
             border: '1px solid #eee',
-            fontSize: '0.875rem'
+            fontSize: '0.875rem',
+            backgroundColor: 'white !important'
           },
           '& .MuiDataGrid-cell': {
-            outline: 'none !important' // 포커스 아웃라인 제거
+            outline: 'none !important', // 포커스 아웃라인 제거
+            backgroundColor: 'white !important'
+          },
+          '& .MuiDataGrid-row': {
+            backgroundColor: 'white !important'
+          },
+          '& .MuiDataGrid-row:hover': {
+            backgroundColor: '#f5f5f5 !important'
+          },
+          '& .MuiDataGrid-columnHeaders': {
+            backgroundColor: 'white !important',
+            borderBottom: '1px solid #eee'
+          },
+          '& .MuiDataGrid-columnHeader': {
+            backgroundColor: 'white !important'
+          },
+          '& .MuiDataGrid-virtualScroller': {
+            backgroundColor: 'white !important'
+          },
+          '& .MuiDataGrid-footerContainer': {
+            backgroundColor: 'white !important'
           }
         }}>
           <DataGrid
@@ -434,99 +464,135 @@ const BaseCodeManagement: React.FC = () => {
       </Card>
 
       {/* 기준정보 추가/수정 다이얼로그 */}
-      <Dialog open={isAddDialogOpen || isEditDialogOpen} onClose={() => { setIsAddDialogOpen(false); setIsEditDialogOpen(false); }} maxWidth="sm" fullWidth>
-        <DialogTitle>
+      <Dialog 
+        open={isAddDialogOpen || isEditDialogOpen} 
+        onClose={() => { setIsAddDialogOpen(false); setIsEditDialogOpen(false); }} 
+        maxWidth="md" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            padding: 0
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          backgroundColor: '#f8f9fa', 
+          borderBottom: '1px solid #dee2e6',
+          fontWeight: 'bold',
+          fontSize: '1.25rem'
+        }}>
           {isEditDialogOpen ? '기준정보 수정' : '기준정보 추가'}
         </DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid component="div" item xs={12} sm={6}>
+        <DialogContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+            <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
                 label="코드"
                 value={codeInput}
                 onChange={(e) => setCodeInput(e.target.value)}
-                fullWidth
                 required
                 error={!codeInput}
                 helperText={!codeInput ? '코드를 입력하세요' : ''}
-                />
-            </Grid>
-            <Grid component="div" item xs={12} sm={6}>
+                sx={{ flex: 1 }}
+                size="medium"
+              />
               <TextField
                 label="이름"
                 value={nameInput}
                 onChange={(e) => setNameInput(e.target.value)}
-                fullWidth
                 required
                 error={!nameInput}
                 helperText={!nameInput ? '이름을 입력하세요' : ''}
-                />
-            </Grid>
-            <Grid component="div" item xs={12}>
-              <FormControl fullWidth required error={!categoryInput}>
-                <InputLabel>카테고리</InputLabel>
-                <Select
-                  label="카테고리"
-                  value={categoryInput}
-                  onChange={(e) => setCategoryInput(e.target.value)}
-                  >
-                  {categoryOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label} ({option.value})
-                    </MenuItem>
-                  ))}
-                </Select>
-                {!categoryInput && <FormHelperText>카테고리를 선택하세요</FormHelperText>}
-              </FormControl>
-            </Grid>
-            <Grid component="div" item xs={12} sm={6}>
-              <TextField
-                label="사용기간"
-                value={max_use_periodInput}
-                onChange={(e) => setmax_use_periodInput(parseInt(e.target.value))}
-                fullWidth
-                required
-                error={!max_use_periodInput}
-                helperText={!max_use_periodInput ? '사용기간을 입력하세요' : ''}
-                />
-            </Grid>
-            <Grid component="div" item xs={12}>
-              <TextField
-                label="설명"
-                value={remarkInput || ''}
-                onChange={(e) => setRemarkInput(e.target.value)}
-                fullWidth
-                multiline
-                rows={3}
-                />
-            </Grid>
-            <Grid component="div" item xs={12} sm={6}>
+                sx={{ flex: 1 }}
+                size="medium"
+              />
+            </Box>
+            
+            <TextField
+              select
+              label="카테고리"
+              value={categoryInput}
+              onChange={(e) => setCategoryInput(e.target.value)}
+              fullWidth
+              required
+              error={!categoryInput}
+              helperText={!categoryInput ? '카테고리를 선택하세요' : ''}
+              size="medium"
+              sx={{
+                '& .MuiInputBase-root': {
+                  height: '44px !important'
+                }
+              }}
+            >
+              {categoryOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            
+            <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
                 label="단위"
                 value={unitInput}
                 onChange={(e) => setUnitInput(e.target.value)}
-                fullWidth
-                />
-            </Grid>
-            <Grid component="div" item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>사용여부</InputLabel>
-                <Select
-                  label="사용여부"
-                  value={isActiveInput}
-                  onChange={(e) => setIsActiveInput(e.target.value as unknown as boolean)}
-                  >
-                  <MenuItem value={true as any}>사용</MenuItem>
-                  <MenuItem value={false as any}>미사용</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-          </Grid>
+                sx={{ flex: 1 }}
+                size="medium"
+              />
+              <TextField
+                label="사용기간(일)"
+                type="number"
+                value={max_use_periodInput}
+                onChange={(e) => setmax_use_periodInput(parseInt(e.target.value) || 0)}
+                sx={{ flex: 1 }}
+                size="medium"
+              />
+              <TextField
+                select
+                label="사용여부"
+                value={isActiveInput ? "true" : "false"}
+                onChange={(e) => setIsActiveInput(e.target.value === "true")}
+                sx={{ 
+                  flex: 1,
+                  '& .MuiInputBase-root': {
+                    height: '44px !important'
+                  }
+                }}
+                size="medium"
+              >
+                <MenuItem value="true">사용</MenuItem>
+                <MenuItem value="false">미사용</MenuItem>
+              </TextField>
+            </Box>
+            
+            <TextField
+              label="설명 및 비고"
+              value={remarkInput || ''}
+              onChange={(e) => setRemarkInput(e.target.value)}
+              fullWidth
+              multiline
+              rows={3}
+              placeholder="상품에 대한 설명이나 비고사항을 입력하세요"
+              size="medium"
+            />
+          </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setIsAddDialogOpen(false); setIsEditDialogOpen(false); }}>취소</Button>
-          <Button onClick={handleSave} variant="contained">저장</Button>
+        <DialogActions sx={{ p: 3, pt: 0, gap: 1 }}>
+          <Button 
+            onClick={() => { setIsAddDialogOpen(false); setIsEditDialogOpen(false); }}
+            variant="outlined"
+            sx={{ minWidth: 80 }}
+          >
+            취소
+          </Button>
+          <Button 
+            onClick={handleSave} 
+            variant="contained"
+            sx={{ minWidth: 80 }}
+          >
+            저장
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -546,7 +612,7 @@ const BaseCodeManagement: React.FC = () => {
           </Alert>
         </Snackbar>
       )}
-    </Box>
+    </MDBox>
   );
 };
 

@@ -1,40 +1,59 @@
-import axios from 'axios';
+import api from './axios';
 
 interface OutboundItem {
-  id: number;
-  inboundId: number;
-  outboundDate: string;
+  id?: string | number;
+  stock_code: string;
+  inbound_date?: Date | string;
+  outboundDate: Date | string;
   quantity: number;
-  unit: string;
+  unit?: string;
+  remark?: string;
+  status?: string;
+  rowStatus?: string;
 }
 
 export const outboundService = {
   async getAll(): Promise<OutboundItem[]> {
-    const response = await axios.get('/outbound');
-    return response.data;
+    const response = await api.get<OutboundItem[]>('/outbound');
+    return response.data.map((item: OutboundItem) => ({
+      ...item,
+      outboundDate: item.outboundDate
+    }));
   },
 
-  async getByInbound(stock_code: string, inbound_date: string): Promise<OutboundItem[]> {
-    const response = await axios.get(`/outbound/inbound/${stock_code}/${inbound_date}`);
-    return response.data;
+  async getByStock(stock_code: string): Promise<OutboundItem[]> {
+    const response = await api.get<OutboundItem[]>(`/outbound/stock/${stock_code}`);
+    return response.data.map((item: OutboundItem) => ({
+      ...item,
+      outboundDate: item.outboundDate
+    }));
   },
 
   async getByDate(date: string): Promise<OutboundItem[]> {
-    const response = await axios.get(`/outbound/date/${date}`);
+    const response = await api.get(`/outbound/date/${date}`);
+    return response.data.map((item: OutboundItem) => ({
+      ...item,
+      outboundDate: item.outboundDate
+    }));
+  },
+
+  async saveOutbound(outboundData: OutboundItem[]): Promise<OutboundItem[]> {
+    const formattedData = outboundData.map(item => ({
+      ...item,
+      outboundDate: item.outboundDate instanceof Date 
+        ? item.outboundDate.toISOString().split('T')[0]
+        : item.outboundDate,
+      inbound_date: item.inbound_date instanceof Date 
+        ? item.inbound_date.toISOString().split('T')[0]
+        : item.inbound_date
+    }));
+    
+    console.log("✅ 출고 데이터 저장:", formattedData);
+    const response = await api.post('/outbound', formattedData);
     return response.data;
   },
 
-  async create(outbound: Omit<OutboundItem, 'id'>): Promise<OutboundItem> {
-    const response = await axios.post('/outbound', outbound);
-    return response.data;
-  },
-
-  async update(id: number, outbound: Partial<OutboundItem>): Promise<OutboundItem> {
-    const response = await axios.put(`/outbound/${id}`, outbound);
-    return response.data;
-  },
-
-  async delete(id: number): Promise<void> {
-    await axios.delete(`/outbound/${id}`);
+  async deleteOutbound(id: number): Promise<void> {
+    await api.delete(`/outbound/${id}`);
   }
 };

@@ -12,8 +12,11 @@ import MDBox from '../md-components/MDBox/index.jsx';
 import MDButton from '../md-components/MDButton/index.jsx';
 import MDTypography from '../md-components/MDTypography/index.jsx';
 import { Card } from '@mui/material';
+import BaseCodeSelectionModal from '../components/BaseCodeSelectionModal';
+
 
 interface InboundItem {
+  id?: string; // 고유 ID 추가
   stock_code: string;
   inbound_date: Date;
   quantity: number;
@@ -31,7 +34,7 @@ const Inbound: React.FC = () => {
 
   const [tableData, setTableData] = useState<InboundItem[]>([
     {
-
+      id: `row_${Date.now()}_0`, // 고유 ID 생성
       stock_code: "",
       inbound_date: new Date(),
       quantity: 0,
@@ -52,6 +55,8 @@ const Inbound: React.FC = () => {
     message: '',
     type: 'success'
   });
+  const [baseCodeModalOpen, setBaseCodeModalOpen] = useState(false);
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const handleDelete = (item: InboundItem) => {
     setItemToDelete(item);
     setDeleteDialogOpen(true);
@@ -71,8 +76,13 @@ const Inbound: React.FC = () => {
     const loadInbounds = async () => {
       try {
         const data = await inboundService.getAll();
-        setTableData(data);
-        setFilteredData(data);
+        // 기존 데이터에 ID가 없으면 추가
+        const dataWithIds = data.map((item: any, index: number) => ({
+          ...item,
+          id: item.id || `existing_${Date.now()}_${index}`
+        }));
+        setTableData(dataWithIds);
+        setFilteredData(dataWithIds);
       } catch (error) {
         console.error('Error loading inbounds:', error);
         setNotification({
@@ -106,9 +116,67 @@ const Inbound: React.FC = () => {
     setFilteredData(filtered as InboundItem[]);
   };
 
-  // TODO: 입고이력 모달 클릭 핸들러 구현
-  const handleInboundClick = () => {
-    // TODO: 입고이력 모달 컴포넌트 추가
+  // 기초정보 선택 핸들러
+  const handleStockCodeClick = (rowId: string) => {
+    console.log("rowId", rowId);
+    setSelectedRowId(rowId);
+    setBaseCodeModalOpen(true);
+  };
+
+  // 기초정보 선택 완료 핸들러
+  const handleBaseCodeSelect = (baseCode: any) => {
+    console.log("baseCode", baseCode);
+    console.log("selectedRowId", selectedRowId);
+    
+    if (selectedRowId !== null) {
+      // 테이블 데이터를 ID로 찾아서 업데이트
+      const updatedTableData = tableData.map(item => 
+        item.id === selectedRowId 
+          ? {
+              ...item,
+              stock_code: baseCode.code,
+              unit: baseCode.unit,
+              max_use_period: baseCode.max_use_period
+            }
+          : item
+      );
+      
+      const updatedFilteredData = filteredData.map(item => 
+        item.id === selectedRowId 
+          ? {
+              ...item,
+              stock_code: baseCode.code,
+              unit: baseCode.unit,
+              max_use_period: baseCode.max_use_period
+            }
+          : item
+      );
+      
+      // tabulator API를 사용해서 ID로 찾아서 업데이트
+      if (tableRef.current && tableRef.current.table) {
+        try {
+          const tabulator = tableRef.current.table;
+          const row = tabulator.getRow(selectedRowId);
+          if (row) {
+            row.update({
+              stock_code: baseCode.code,
+              unit: baseCode.unit,
+              max_use_period: baseCode.max_use_period
+            });
+            console.log("Tabulator update successful");
+          }
+        } catch (error) {
+          console.log("Tabulator update failed:", error);
+        }
+      }
+      
+      // React state 업데이트
+      setTableData(updatedTableData);
+      setFilteredData(updatedFilteredData);
+    }
+    
+    setBaseCodeModalOpen(false);
+    setSelectedRowId(null);
   };
 
   const columns: any = [
@@ -117,6 +185,12 @@ const Inbound: React.FC = () => {
       field: "stock_code",
       width: 150,
       editor: "input",
+      cellClick: (e: any, cell: any) => {
+        const row = cell.getRow();
+        const rowData = row.getData();
+        console.log("Clicked row data:", rowData);
+        handleStockCodeClick(rowData.id);
+      },
       cellEdited: (cell: any) => {
         const row = cell.getRow();
         const data = row.getData();
@@ -247,6 +321,7 @@ const Inbound: React.FC = () => {
 
   const handleAddRow = () => {
     const newRow: InboundItem = {
+      id: `row_${Date.now()}_${tableData.length}`, // 고유 ID 생성
       stock_code: "",
       inbound_date: new Date(),
       quantity: 0,
@@ -292,11 +367,11 @@ const Inbound: React.FC = () => {
   return (
     <MDBox py={3}>
       
-      <Card sx={{ p: 3, mb: 3 }}>
+      <Card sx={{ p: 3, mb: 3, backgroundColor: 'white' }}>
         <StockSearch onSearch={handleSearch} />
       </Card>
 
-      <Card sx={{ p: 3 }}>
+      <Card sx={{ p: 3, height: '68vh', backgroundColor: 'white' }}>
         <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <MDTypography variant="h6" fontWeight="medium">
             기초코드에 등록된 품목을 기준으로 입고품을 등록해주세요!
@@ -328,35 +403,63 @@ const Inbound: React.FC = () => {
 
         <MDBox sx={{ 
           '& .tabulator': {
-            backgroundColor: 'transparent',
-            border: 'none',
+            backgroundColor: 'white !important',
+            border: '1px solid #eee',
           },
           '& .tabulator-header': {
-            backgroundColor: '#f8f9fa',
+            backgroundColor: 'white !important',
             borderBottom: '1px solid #dee2e6',
           },
           '& .tabulator-col': {
-            backgroundColor: 'transparent',
+            backgroundColor: 'white !important',
+          },
+          '& .tabulator-col-content': {
+            backgroundColor: 'white !important',
           },
           '& .tabulator-cell': {
+            backgroundColor: 'white !important',
             borderRight: '1px solid #dee2e6',
           },
+          '& .tabulator-row': {
+            backgroundColor: 'white !important',
+          },
           '& .tabulator-row:hover': {
-            backgroundColor: '#f8f9fa',
+            backgroundColor: '#f5f5f5 !important',
+          },
+          '& .tabulator-row-even': {
+            backgroundColor: 'white !important',
+          },
+          '& .tabulator-row-odd': {
+            backgroundColor: 'white !important',
+          },
+          '& .deleted-row': {
+            backgroundColor: '#ffebee !important',
+            textDecoration: 'line-through',
+            opacity: 0.6,
           }
         }}>
           <ReactTabulator
             ref={tableRef}
             data={filteredData}
             columns={columns}
-            layout="fitColumns"
+            layout="fitDataStretch"
             options={{ 
               movableRows: true, 
               movableColumns: true,
+              index: "id", // ID를 row index로 사용
+              height: "100%",
+              layoutColumnsOnNewData: true,
             }}
           />
         </MDBox>
       </Card>
+
+      {/* 기초정보 선택 모달 */}
+      <BaseCodeSelectionModal
+        open={baseCodeModalOpen}
+        onClose={() => setBaseCodeModalOpen(false)}
+        onSelect={handleBaseCodeSelect}
+      />
     </MDBox>
   );
 };

@@ -50,14 +50,28 @@ const Dashboard: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography variant="h6" component="div">
-                    재고 현황
+                    사용 기간 임박
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    등록된 상품 및 재고 현황을 확인합니다.
+                    사용 기간이 임박한 품목을 확인합니다.
+                  </Typography>
+                </CardContent>
+
+              </Card>
+            </Box>
+            
+            <Box sx={{ flex: 1 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" component="div">
+                    최근 출고 현황
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    출고 리스트
                   </Typography>
                 </CardContent>
                 <CardActions>
-                  <Button size="small">더 보기</Button>
+                  <Button size="small">전체 출고 보기</Button>
                 </CardActions>
               </Card>
             </Box>
@@ -66,26 +80,10 @@ const Dashboard: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography variant="h6" component="div">
-                    주문 관리
+                    필요한 기능 접수
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    주문 목록 및 처리 상태를 확인합니다.
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button size="small">더 보기</Button>
-                </CardActions>
-              </Card>
-            </Box>
-            
-            <Box sx={{ flex: 1 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" component="div">
-                    사용자 관리
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    사용자 관리 및 권한 설정을 확인합니다.
+                    사용자가 요청한 기능 접수 현황
                   </Typography>
                 </CardContent>
                 <CardActions>

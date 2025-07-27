@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { OutboundService } from './outbound.service';
 import { CreateOutboundDto } from './dto/create-outbound.dto';
 import { UpdateOutboundDto } from './dto/update-outbound.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('outbound')
 export class OutboundController {
@@ -12,12 +13,12 @@ export class OutboundController {
     return this.outboundService.findAll();
   }
 
-  @Get('outbound/:stock_code')
-  async findByInbound(@Param('stock_code') stock_code: string) {
-    return this.outboundService.findByInbound(stock_code);
+  @Get('stock/:stock_code')
+  async findByStock(@Param('stock_code') stock_code: string) {
+    return this.outboundService.findByStock(stock_code);
   }
 
-  @Get('outbound/date/:outboundDate')
+  @Get('date/:outboundDate')
   async findByDate(@Param('outboundDate') outboundDate: string) {
     return this.outboundService.findByDate(new Date(outboundDate));
   }
@@ -27,12 +28,21 @@ export class OutboundController {
     return this.outboundService.findOne(id);
   }
 
+  // 출고 추가, 수정, 삭제
   @Post()
+  @UseGuards(AuthGuard('jwt'))
+  async save(@Body() outboundDtos: (CreateOutboundDto | UpdateOutboundDto)[]) {
+    return this.outboundService.save(outboundDtos);
+  }
+
+  @Post('single')
+  @UseGuards(AuthGuard('jwt'))
   async create(@Body() createOutboundDto: CreateOutboundDto) {
     return this.outboundService.create(createOutboundDto);
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard('jwt'))
   async update(
     @Param('id') id: number,
     @Body() updateOutboundDto: UpdateOutboundDto
@@ -41,7 +51,14 @@ export class OutboundController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
   async remove(@Param('id') id: number) {
     return this.outboundService.remove(id);
+  }
+
+  @Post(':id/complete')
+  @UseGuards(AuthGuard('jwt'))
+  async complete(@Param('id') id: number) {
+    return this.outboundService.completeOutbound(id);
   }
 }
