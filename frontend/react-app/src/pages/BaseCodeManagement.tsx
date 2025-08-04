@@ -336,7 +336,20 @@ const BaseCodeManagement: React.FC = () => {
   };
   
   return (
-    <MDBox py={3}>
+    <MDBox py={3} sx={{ 
+      '& *': { 
+        color: '#000000 !important' 
+      },
+      '& .MuiButton-root': {
+        color: 'white !important'
+      },
+      '& .MuiButton-outlined': {
+        color: '#1976d2 !important'
+      },
+      '& .MuiButton-outlinedError': {
+        color: '#d32f2f !important'
+      }
+    }}>
       <Card sx={{ p: 3, mb: 3, backgroundColor: 'white' }}>
         <MDBox display="flex" gap={2} alignItems="center">
           <TextField
@@ -467,12 +480,21 @@ const BaseCodeManagement: React.FC = () => {
       <Dialog 
         open={isAddDialogOpen || isEditDialogOpen} 
         onClose={() => { setIsAddDialogOpen(false); setIsEditDialogOpen(false); }} 
-        maxWidth="md" 
+        maxWidth="sm" 
         fullWidth
         PaperProps={{
           sx: {
             borderRadius: 2,
-            padding: 0
+            padding: 0,
+            '& *': { 
+              color: '#000000 !important' 
+            },
+            '& .MuiButton-root': {
+              color: 'white !important'
+            },
+            '& .MuiButton-outlined': {
+              color: '#1976d2 !important'
+            }
           }
         }}
       >

@@ -55,10 +55,4 @@ export class OutboundController {
   async remove(@Param('id') id: number) {
     return this.outboundService.remove(id);
   }
-
-  @Post(':id/complete')
-  @UseGuards(AuthGuard('jwt'))
-  async complete(@Param('id') id: number) {
-    return this.outboundService.completeOutbound(id);
-  }
 }

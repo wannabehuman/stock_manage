@@ -91,7 +91,7 @@ export class OutboundService {
             quantity: outboundDto.quantity,
             unit: outboundDto.unit,
             remark: outboundDto.remark,
-            status: 'COMPLETED' // 출고 등록 시 바로 완료 처리
+            status: 'PENDING' // 처음에는 PENDING 상태로 저장
           });
 
           results.push(await queryRunner.manager.save(Outbound, newOutbound));
@@ -154,7 +154,7 @@ export class OutboundService {
           existingOutbound.quantity = outboundDto.quantity;
           existingOutbound.unit = outboundDto.unit;
           existingOutbound.remark = outboundDto.remark;
-          existingOutbound.status = 'COMPLETED'; // 수정 시에도 완료 처리
+          existingOutbound.status = 'PENDING'; // 수정 시에도 PENDING 상태 유지
 
           results.push(await queryRunner.manager.save(Outbound, existingOutbound));
 
@@ -221,32 +221,5 @@ export class OutboundService {
 
   async remove(id: number): Promise<void> {
     await this.outboundRepository.delete(id);
-  }
-
-  async completeOutbound(id: number): Promise<Outbound> {
-    const outbound = await this.findOne(id);
-    if (!outbound) {
-      throw new Error('해당 출고 데이터를 찾을 수 없습니다.');
-    }
-
-    if (outbound.status === 'COMPLETED') {
-      throw new Error('이미 완료된 출고 데이터입니다.');
-    }
-
-    // 입고 재고 확인
-    const inbound = await this.inboundRepository.findOne({
-      where: { 
-        stock_code: outbound.stock_code,
-        inbound_date: outbound.inbound_date
-      }
-    });
-
-    if (!inbound) {
-      throw new Error('해당 입고 데이터를 찾을 수 없습니다.');
-    }
-
-    // 재고가 0이면 완료 처리하고 수정 불가
-    outbound.status = 'COMPLETED';
-    return this.outboundRepository.save(outbound);
   }
 }

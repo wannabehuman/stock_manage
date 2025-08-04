@@ -25,8 +25,11 @@ const colors = {
   },
 
   text: {
-    main: "#7b809a",
-    focus: "#7b809a",
+    primary: "#344767", // 어두운 글자색 - MUI의 기본 텍스트 색상
+    secondary: "#7b809a", // 보조 글자색 - MUI의 보조 텍스트 색상
+    disabled: "#9ca3af", // 비활성화된 텍스트 색상
+    main: "#344767", // 기본 글자색을 어두운 색으로 변경
+    focus: "#344767",
   },
 
   transparent: {

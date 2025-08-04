@@ -61,6 +61,10 @@ function AppContent() {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, layout, sidenavColor, transparentSidenav, whiteSidenav, darkMode } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
+  const location = useLocation();
+
+  // 로그인 페이지인지 확인
+  const isLoginPage = location.pathname === '/login';
 
   // Open sidenav when mouse enter on mini sidenav
   const handleOnMouseEnter = () => {
@@ -111,38 +115,36 @@ function AppContent() {
       <CssBaseline />
       <AuthProvider>
         <MenuProvider>
-          <Router>
-            {layout === "dashboard" && (
-              <Sidenav
-                color={sidenavColor}
-                // brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-                brandName="박수현의 로지스틱스"
-                routes={routes}
-                onMouseEnter={handleOnMouseEnter}
-                onMouseLeave={handleOnMouseLeave}
-              />
-            )}
-            <Routes>
-              {/* 로그인 페이지는 별도 레이아웃 */}
-              <Route path="/login" element={<LoginRegisterForm />} />
-              
-              {/* 동적 라우트 생성 */}
-              {getRoutes(routes)}
-              
-              {/* 기본 경로는 대시보드로 리디렉션 */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              
-              {/* 404 페이지 */}
-              <Route path="*" element={
-                <DashboardLayout>
-                  <MDBox sx={{ p: 3, textAlign: 'center' }}>
-                    <h1>404 - 페이지를 찾을 수 없습니다</h1>
-                    <p>요청하신 페이지를 찾을 수 없습니다.</p>
-                  </MDBox>
-                </DashboardLayout>
-              } />
-            </Routes>
-          </Router>
+          {layout === "dashboard" && !isLoginPage && (
+            <Sidenav
+              color={sidenavColor}
+              // brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
+              brandName="박수현의 로지스틱스"
+              routes={routes}
+              onMouseEnter={handleOnMouseEnter}
+              onMouseLeave={handleOnMouseLeave}
+            />
+          )}
+          <Routes>
+            {/* 로그인 페이지는 별도 레이아웃 */}
+            <Route path="/login" element={<LoginRegisterForm />} />
+            
+            {/* 동적 라우트 생성 */}
+            {getRoutes(routes)}
+            
+            {/* 기본 경로는 대시보드로 리디렉션 */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            
+            {/* 404 페이지 */}
+            <Route path="*" element={
+              <DashboardLayout>
+                <MDBox sx={{ p: 3, textAlign: 'center' }}>
+                  <h1>404 - 페이지를 찾을 수 없습니다</h1>
+                  <p>요청하신 페이지를 찾을 수 없습니다.</p>
+                </MDBox>
+              </DashboardLayout>
+            } />
+          </Routes>
         </MenuProvider>
       </AuthProvider>
     </>
@@ -153,7 +155,9 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <MaterialUIControllerProvider>
-        <AppContent />
+        <Router>
+          <AppContent />
+        </Router>
       </MaterialUIControllerProvider>
     </ThemeProvider>
   );

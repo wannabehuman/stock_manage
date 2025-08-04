@@ -377,26 +377,27 @@ const Inbound: React.FC = () => {
             기초코드에 등록된 품목을 기준으로 입고품을 등록해주세요!
           </MDTypography>
           <MDBox display="flex" gap={2}>
-            <MDButton variant="outlined" color="info" onClick={handleAddRow}>
-              ➕ 행 추가
+            <MDButton variant="outlined" color="info" onClick={handleAddRow} sx={{ fontSize: 14, fontWeight: 600 }}>
+              행 추가
             </MDButton>
             <MDButton 
               variant="gradient" 
               color="success"
+              sx={{ fontSize: 14, fontWeight: 600 }}
               onClick={() => {
                 const filteredDataToSave = tableData.filter(item => item.rowStatus !== "" && item.rowStatus !== undefined);
                 const invalidItems = filteredDataToSave.filter(item => {
                   return !item.stock_code || item.stock_code.trim() === '' ||
                          typeof item.quantity !== 'number' || item.quantity < 0;
                 });
-                if (invalidItems.length > 0) {
-                  alert('필수 필드가 누락되었거나 잘못된 값이 있습니다');
-                  return;
-                }
+                // if (invalidItems.length > 0) {
+                //   alert('필수 필드가 누락되었거나 잘못된 값이 있습니다');
+                //   return;
+                // }
                 inboundService.saveStock(filteredDataToSave);
               }}
             >
-              💾 입고 저장
+              입고 저장
             </MDButton>
           </MDBox>
         </MDBox>

@@ -154,11 +154,8 @@ const Outbound: React.FC = () => {
       cellClick: (e: any, cell: any) => {
         const row = cell.getRow();
         const rowData = row.getData();
-        if (rowData.status === 'COMPLETED') {
-          alert('출고 완료된 데이터는 수정할 수 없습니다.');
-          return;
-        }
-        console.log("Clicked row data:", rowData);
+
+        // console.log("Clicked row data:", rowData);
         handleInboundIdClick(rowData.id);
       }
     },
@@ -245,47 +242,17 @@ const Outbound: React.FC = () => {
       formatter: () => "🗑",
       cellClick: (e: any, cell: any) => {
         const row = cell.getRow();
-        const rowData = row.getData();
-        
-        // 출고 완료된 데이터는 삭제 불가
-        if (rowData.status === 'COMPLETED') {
-          alert('출고 완료된 데이터는 삭제할 수 없습니다.');
-          return;
-        }
-        
-        if(rowData.rowStatus === "INSERT") {
+        if(row.getData().rowStatus === "INSERT") {
           row.delete();
-        } else if(rowData.rowStatus === "DELETE") {
-          // 삭제 취소
-          if (tableRef.current && tableRef.current.table) {
-            try {
-              const tabulator = tableRef.current.table;
-              const targetRow = tabulator.getRow(rowData.id);
-              if (targetRow) {
-                targetRow.update({ rowStatus: "" });
-                targetRow.getElement().classList.remove("deleted-row");
-              }
-            } catch (error) {
-              console.log("Row update failed:", error);
-            }
-          }
+        } else if(row.getData().rowStatus === "DELETE") {
+          row.update({ rowStatus: "" });
+          row.getElement().classList.remove("deleted-row");
         } else {
-          // 삭제 표시
-          if (tableRef.current && tableRef.current.table) {
-            try {
-              const tabulator = tableRef.current.table;
-              const targetRow = tabulator.getRow(rowData.id);
-              if (targetRow) {
-                targetRow.update({ rowStatus: "DELETE" });
-                targetRow.getElement().classList.add("deleted-row");
-              }
-            } catch (error) {
-              console.log("Row update failed:", error);
-            }
-          }
+          row.update({ rowStatus: "DELETE" });
+          row.getElement().classList.add("deleted-row");
         }
       }
-    }
+    },
   ];
 
   // 행 추가 핸들러
