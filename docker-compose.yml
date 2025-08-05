@@ -5,7 +5,7 @@ version: "3.8"
 services:
   backend:
     build:
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
       context: ./backend/
     volumes:
       - ./backend/nestjs/:/backend/nestjs/
@@ -38,9 +38,8 @@ services:
     depends_on:
       - backend
   nginx:
-    image: nginx:latest
     build:
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
       context: ./nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro # Nginx 설정 파일
