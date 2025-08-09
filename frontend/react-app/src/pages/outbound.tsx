@@ -328,7 +328,14 @@ const Outbound: React.FC = () => {
         <StockSearch onSearch={loadOutboundData} />
       </Card>
 
-      <Card sx={{ p: 3, height: '68vh', backgroundColor: 'white' }}>
+      <Card sx={{ 
+        p: { xs: 1, sm: 2, md: 3 }, 
+        height: { xs: '50vh', sm: '55vh', md: '65vh' },
+        backgroundColor: 'white',
+        borderRadius: { xs: 0, sm: 2 },
+        display: 'flex',
+        flexDirection: 'column'
+      }} className="responsive-card">
         <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <MDTypography variant="h6" fontWeight="medium">
             입고된 품목을 기준으로 출고품을 등록해주세요!
@@ -348,9 +355,19 @@ const Outbound: React.FC = () => {
         </MDBox>
 
         <MDBox sx={{ 
+          flex: 1,
+          overflow: 'hidden',
           '& .tabulator': {
             backgroundColor: 'white !important',
             border: '1px solid #eee',
+            width: '100% !important',
+            height: '100% !important',
+            fontSize: { xs: '12px', sm: '13px', md: '14px' },
+            overflow: 'auto',
+          },
+          '& .tabulator-tableholder': {
+            overflow: 'auto !important',
+            maxHeight: { xs: 'calc(50vh - 120px)', sm: 'calc(55vh - 120px)', md: 'calc(65vh - 120px)' },
           },
           '& .tabulator-header': {
             backgroundColor: 'white !important',

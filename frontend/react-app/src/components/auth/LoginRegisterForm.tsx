@@ -91,7 +91,17 @@ const LoginRegisterForm: React.FC = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        px: 2,
+        backgroundColor: '#f5f5f5'
+      }}
+    >
       {/* 오류 메시지 */}
       <Snackbar 
         open={!!error} 
@@ -119,12 +129,14 @@ const LoginRegisterForm: React.FC = () => {
       <Paper 
         elevation={3} 
         sx={{ 
-          marginTop: 8, 
-          padding: 4, 
+          padding: { xs: 3, sm: 4 },
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'center',
-          position: 'relative'
+          position: 'relative',
+          width: '100%',
+          maxWidth: { xs: '350px', sm: '400px' },
+          borderRadius: 2
         }}
       >
         {loading && (
@@ -282,7 +294,7 @@ const LoginRegisterForm: React.FC = () => {
           )}
         </Box>
       </Paper>
-    </Container>
+    </Box>
   );
 };
 

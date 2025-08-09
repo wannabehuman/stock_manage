@@ -145,10 +145,14 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
       {...rest}
       variant="permanent"
       ownerState={{ transparentSidenav, whiteSidenav, miniSidenav, darkMode }}
+      onClose={closeSidenav}
+      ModalProps={{
+        keepMounted: true,
+      }}
     >
       <MDBox pt={3} pb={1} px={4} textAlign="center">
         <MDBox
-          display={{ xs: "block", xl: "none" }}
+          display={{ xs: "block", md: "none" }}
           position="absolute"
           top={0}
           right={0}

@@ -1,0 +1,195 @@
+/* 전역 반응형 스타일 */
+
+/* 테이블 반응형 */
+.tabulator {
+  overflow: auto !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  height: 100% !important;
+}
+
+.tabulator-tableholder {
+  overflow: auto !important;
+  max-height: 100% !important;
+}
+
+/* 테이블 스크롤바 스타일링 */
+.tabulator-tableholder::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tabulator-tableholder::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.tabulator-tableholder::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.tabulator-tableholder::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Firefox 스크롤바 */
+.tabulator-tableholder {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+@media (max-width: 480px) {
+  .tabulator .tabulator-header {
+    font-size: 10px !important;
+  }
+  
+  .tabulator .tabulator-cell {
+    font-size: 10px !important;
+    padding: 2px !important;
+    min-width: 60px !important;
+  }
+  
+  .tabulator .tabulator-col {
+    min-width: 60px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .tabulator .tabulator-header {
+    font-size: 11px !important;
+  }
+  
+  .tabulator .tabulator-cell {
+    font-size: 11px !important;
+    padding: 4px !important;
+    min-width: 80px !important;
+  }
+  
+  .tabulator .tabulator-col {
+    min-width: 80px !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .tabulator .tabulator-header {
+    font-size: 13px !important;
+  }
+  
+  .tabulator .tabulator-cell {
+    font-size: 13px !important;
+    padding: 6px !important;
+  }
+}
+
+/* 큰 화면에서 최적화 */
+@media (min-width: 1920px) {
+  .tabulator {
+    font-size: 15px !important;
+  }
+  
+  .tabulator .tabulator-header {
+    font-size: 15px !important;
+    padding: 12px !important;
+  }
+  
+  .tabulator .tabulator-cell {
+    font-size: 14px !important;
+    padding: 10px !important;
+  }
+}
+
+/* 초대형 화면 (4K 등) 최적화 */
+@media (min-width: 2560px) {
+  .tabulator {
+    font-size: 16px !important;
+  }
+  
+  .tabulator .tabulator-header {
+    font-size: 16px !important;
+    padding: 16px !important;
+  }
+  
+  .tabulator .tabulator-cell {
+    font-size: 15px !important;
+    padding: 12px !important;
+  }
+}
+
+/* 카드 반응형 */
+.responsive-card {
+  margin: 8px !important;
+}
+
+@media (min-width: 768px) {
+  .responsive-card {
+    margin: 16px !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .responsive-card {
+    margin: 24px !important;
+  }
+}
+
+/* 버튼 그룹 반응형 */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+@media (min-width: 600px) {
+  .button-group {
+    flex-direction: row;
+    width: auto;
+  }
+}
+
+/* 검색 컨테이너 반응형 */
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 768px) {
+  .search-container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* 페이지 헤더 반응형 */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+}
+
+@media (min-width: 600px) {
+  .page-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .page-header {
+    padding: 32px;
+  }
+}
+
+/* 컨테이너 최대 너비 제거 */
+.full-width-container {
+  max-width: none !important;
+  width: 100% !important;
+}

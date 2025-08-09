@@ -26,6 +26,7 @@ import brandDark from "./assets/images/logo-ct-dark.png";
 import routes from "./routes";
 
 import './App.css';
+import './styles/responsive.css';
 
 import LoginRegisterForm from './components/auth/LoginRegisterForm.tsx';
 

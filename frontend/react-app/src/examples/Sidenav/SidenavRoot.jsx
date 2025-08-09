@@ -45,7 +45,7 @@ export default styled(Drawer)(({ theme, ownerState }) => {
       duration: transitions.duration.shorter,
     }),
 
-    [breakpoints.up("xl")]: {
+    [breakpoints.up("md")]: {
       boxShadow: transparentSidenav ? "none" : xxl,
       marginBottom: transparentSidenav ? 0 : "inherit",
       left: "0",
@@ -56,18 +56,27 @@ export default styled(Drawer)(({ theme, ownerState }) => {
         duration: transitions.duration.enteringScreen,
       }),
     },
+
+    // 모바일에서는 항상 전체 너비로 오버레이
+    [breakpoints.down("md")]: {
+      width: sidebarWidth,
+      transform: "translateX(0)",
+      zIndex: 1300,
+      position: "fixed",
+    },
   });
 
   // styles for the sidenav when miniSidenav={true}
   const drawerCloseStyles = () => ({
     background: backgroundValue,
+    // 모바일에서는 완전히 숨김
     transform: `translateX(${pxToRem(-320)})`,
     transition: transitions.create("transform", {
       easing: transitions.easing.sharp,
       duration: transitions.duration.shorter,
     }),
 
-    [breakpoints.up("xl")]: {
+    [breakpoints.up("md")]: {
       boxShadow: transparentSidenav ? "none" : xxl,
       marginBottom: transparentSidenav ? 0 : "inherit",
       left: "0",
@@ -78,6 +87,14 @@ export default styled(Drawer)(({ theme, ownerState }) => {
         easing: transitions.easing.sharp,
         duration: transitions.duration.shorter,
       }),
+    },
+
+    // 모바일에서는 화면 밖으로 이동
+    [breakpoints.down("md")]: {
+      width: sidebarWidth,
+      transform: `translateX(${pxToRem(-320)})`,
+      zIndex: 1300,
+      position: "fixed",
     },
   });
 

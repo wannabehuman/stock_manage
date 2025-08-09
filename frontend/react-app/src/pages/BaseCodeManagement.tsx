@@ -394,7 +394,14 @@ const BaseCodeManagement: React.FC = () => {
         </MDBox>
       </Card>
 
-      <Card sx={{ p: 3, height: '68vh', backgroundColor: 'white' }}>
+      <Card sx={{ 
+        p: { xs: 1, sm: 2, md: 3 }, 
+        height: { xs: '50vh', sm: '55vh', md: '65vh' },
+        backgroundColor: 'white',
+        borderRadius: { xs: 0, sm: 2 },
+        display: 'flex',
+        flexDirection: 'column'
+      }} className="responsive-card">
         <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <MDTypography variant="h6" fontWeight="medium">
             기준코드 관리
@@ -410,8 +417,8 @@ const BaseCodeManagement: React.FC = () => {
           </MDBox>
         </MDBox>
         <MDBox sx={{ 
-          height: 'calc(68vh - 80px)', // 헤더 높이만큼 빼기
-          width: '100%',
+          flex: 1,
+          overflow: 'hidden',
           minHeight: 300, // 최소 높이 조정
           '& .MuiDataGrid-root': {
             border: '1px solid #eee',

@@ -39,21 +39,30 @@ function DashboardLayout({ children }) {
   return (
     <MDBox
       sx={({ breakpoints, transitions, functions: { pxToRem } }) => ({
-        p: 3,
+        p: { xs: 2, sm: 3, md: 4 },
         position: "relative",
         minHeight: "100vh",
         
-        [breakpoints.up("xl")]: {
-          marginLeft: miniSidenav ? pxToRem(5) : pxToRem(20),
+        // 모든 화면 크기에서 사이드바 너비를 고려
+        [breakpoints.up("md")]: {
+          marginLeft: miniSidenav ? pxToRem(56) : pxToRem(270),
           width: miniSidenav ? `calc(100vw - ${pxToRem(56)})` : `calc(100vw - ${pxToRem(270)})`,
-          transition: transitions.create(["margin-left", "margin-right", "width"], {
+          transition: transitions.create(["margin-left", "width"], {
             easing: transitions.easing.easeInOut,
             duration: transitions.duration.standard,
           }),
         },
         
-        [breakpoints.down("xl")]: {
+        // 모바일에서는 전체 너비 사용
+        [breakpoints.down("md")]: {
           width: "100%",
+          marginLeft: 0,
+        },
+        
+        // 큰 화면에서 최대 너비 제한 제거 및 여백 조정
+        [breakpoints.up("xl")]: {
+          maxWidth: "none",
+          p: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 },
         },
       })}
     >

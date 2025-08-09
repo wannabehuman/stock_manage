@@ -403,9 +403,19 @@ const Inbound: React.FC = () => {
         </MDBox>
 
         <MDBox sx={{ 
+          flex: 1,
+          overflow: 'hidden',
           '& .tabulator': {
             backgroundColor: 'white !important',
             border: '1px solid #eee',
+            width: '100% !important',
+            height: '100% !important',
+            fontSize: { xs: '12px', sm: '13px', md: '14px' },
+            overflow: 'auto',
+          },
+          '& .tabulator-tableholder': {
+            overflow: 'auto !important',
+            maxHeight: { xs: 'calåc(50vh - 120px)', sm: 'calc(55vh - 120px)', md: 'calc(65vh - 120px)' },
           },
           '& .tabulator-header': {
             backgroundColor: 'white !important',
@@ -447,9 +457,13 @@ const Inbound: React.FC = () => {
             options={{ 
               movableRows: true, 
               movableColumns: true,
-              index: "id", // ID를 row index로 사용
+              index: "id",
               height: "100%",
               layoutColumnsOnNewData: true,
+              maxHeight: "100%",
+              pagination: false,
+              virtualDom: true,
+              virtualDomBuffer: 50,
             }}
           />
         </MDBox>

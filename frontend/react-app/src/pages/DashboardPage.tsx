@@ -28,13 +28,29 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg">
-      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" gutterBottom>
+    <Container maxWidth={false} sx={{ px: { xs: 0, sm: 2, md: 3 } }}>
+      <Paper elevation={3} sx={{ 
+        p: { xs: 2, sm: 3, md: 4 }, 
+        mt: { xs: 0, sm: 2, md: 3 },
+        borderRadius: { xs: 0, sm: 2 }
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          mb: 3,
+          gap: { xs: 2, sm: 0 }
+        }}>
+          <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>
             대시보드
           </Typography>
-          <Button variant="contained" color="primary" onClick={handleLogout}>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleLogout}
+            sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
+          >
             로그아웃
           </Button>
         </Box>
@@ -50,23 +66,25 @@ const DashboardPage: React.FC = () => {
           </Typography>
         </Box>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Card>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+          <Grid item xs={12} lg={6} xl={4}>
+            <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   사용자 정보
                 </Typography>
-                <Typography variant="body2">아이디: {user?.username}</Typography>
-                <Typography variant="body2">이메일: {user?.email}</Typography>
-                <Typography variant="body2">가입일: {new Date(user?.createdAt || '').toLocaleString()}</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2">아이디: {user?.username}</Typography>
+                  <Typography variant="body2">이메일: {user?.email}</Typography>
+                  <Typography variant="body2">가입일: {new Date(user?.createdAt || '').toLocaleString()}</Typography>
+                </Box>
               </CardContent>
             </Card>
           </Grid>
 
           {user?.role === UserRole.ADMIN && (
-            <Grid item xs={12} md={6}>
-              <Card>
+            <Grid item xs={12} lg={6} xl={4}>
+              <Card sx={{ height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
                     관리자 기능
@@ -76,6 +94,7 @@ const DashboardPage: React.FC = () => {
                       variant="contained" 
                       color="secondary" 
                       onClick={navigateToUserApproval}
+                      fullWidth
                     >
                       사용자 승인 관리
                     </Button>
@@ -85,8 +104,8 @@ const DashboardPage: React.FC = () => {
             </Grid>
           )}
 
-          <Grid item xs={12}>
-            <Card>
+          <Grid item xs={12} xl={user?.role === UserRole.ADMIN ? 4 : 8}>
+            <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   재고 관리 시스템

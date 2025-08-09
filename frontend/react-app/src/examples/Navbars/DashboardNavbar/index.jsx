@@ -140,6 +140,24 @@ function DashboardNavbar({ absolute, light, isMini }) {
       sx={(theme) => navbar(theme, { transparentNavbar, absolute, light, darkMode })}
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
+        {/* 모바일 메뉴 버튼 */}
+        <MDBox sx={{ display: { xs: 'block', md: 'none' }, mr: 2 }}>
+          <IconButton
+            size="large"
+            color="inherit"
+            onClick={handleMiniSidenav}
+            sx={{
+              ...iconsStyle,
+              p: 1,
+              '& .MuiIcon-root': {
+                fontSize: '1.5rem !important',
+              }
+            }}
+          >
+            <Icon sx={{ fontSize: '1.5rem' }}>☰</Icon>
+          </IconButton>
+        </MDBox>
+        
         <MDBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
           <Breadcrumbs title={getCurrentPageName()} route={route} light={light} />
         </MDBox>
