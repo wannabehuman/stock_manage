@@ -10,10 +10,12 @@ import {
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { inboundService } from '../services/inbound.service';
+import { baseCodeService } from '../services/baseCode.service';
 
 interface InboundData {
   id?: number;
   stock_code: string;
+  stock_name?: string; // 재고명 추가
   inbound_date: string | Date;
   quantity: number;
   unit: string;
@@ -47,8 +49,25 @@ const InboundSelectionModal: React.FC<InboundSelectionModalProps> = ({
   const loadInboundData = async () => {
     setLoading(true);
     try {
-      const data = await inboundService.getAll();
-      setInboundData(data);
+      // 입고 데이터와 기초코드 데이터를 동시에 가져오기
+      const [inboundItems, baseCodeData] = await Promise.all([
+        inboundService.getAll(),
+        baseCodeService.getAll()
+      ]);
+
+      // 기초코드를 코드별로 매핑하여 빠른 검색을 위한 맵 생성
+      const baseCodeMap = baseCodeData.reduce((map: any, baseCode: any) => {
+        map[baseCode.code] = baseCode;
+        return map;
+      }, {});
+
+      // 입고 데이터에 기초코드의 이름 추가
+      const dataWithNames = inboundItems.map((item: any) => ({
+        ...item,
+        stock_name: baseCodeMap[item.stock_code]?.name || item.stock_code // 기초코드에서 이름 가져오기
+      }));
+
+      setInboundData(dataWithNames);
     } catch (error) {
       console.error('Error loading inbound data:', error);
     } finally {
@@ -57,7 +76,8 @@ const InboundSelectionModal: React.FC<InboundSelectionModalProps> = ({
   };
 
   const columns = [
-    { field: 'stock_code', headerName: '재고코드', width: 150 },
+    { field: 'stock_code', headerName: '재고코드', width: 150, hide: true }, // 코드는 숨김
+    { field: 'stock_name', headerName: '재고명', width: 200 }, // 재고명 추가
     { 
       field: 'inbound_date', 
       headerName: '입고날짜', 

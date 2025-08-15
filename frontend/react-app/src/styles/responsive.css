@@ -39,6 +39,31 @@
   scrollbar-color: #c1c1c1 #f1f1f1;
 }
 
+/* 입력 필드 글자색 */
+.tabulator .tabulator-cell input {
+  color: #000000 !important;
+  background-color: white !important;
+}
+
+.tabulator .tabulator-cell input:focus {
+  color: #000000 !important;
+  background-color: white !important;
+}
+
+.tabulator .tabulator-editor input {
+  color: #000000 !important;
+  background-color: white !important;
+}
+
+.tabulator .tabulator-editor input:focus {
+  color: #000000 !important;
+  background-color: white !important;
+}
+
+.tabulator .tabulator-cell {
+  color: #000000 !important;
+}
+
 @media (max-width: 480px) {
   .tabulator .tabulator-header {
     font-size: 10px !important;

@@ -6,6 +6,7 @@ import { DefaultButton } from '../components/button/defaultButton';
 import { StockSearch } from '../components/StockSearch';
 import './RecentStock.css';
 import { inboundService } from '../services/inbound.service';
+import { baseCodeService } from '../services/baseCode.service';
 
 // Material Dashboard 2 React components
 import MDBox from '../md-components/MDBox/index.jsx';
@@ -18,6 +19,7 @@ import BaseCodeSelectionModal from '../components/BaseCodeSelectionModal';
 interface InboundItem {
   id?: string; // 고유 ID 추가
   stock_code: string;
+  stock_name?: string; // 재고명 추가
   inbound_date: Date;
   quantity: number;
   unit: string;
@@ -36,6 +38,7 @@ const Inbound: React.FC = () => {
     {
       id: `row_${Date.now()}_0`, // 고유 ID 생성
       stock_code: "",
+      stock_name: "", // 재고명 추가
       inbound_date: new Date(),
       quantity: 0,
       unit: "",
@@ -75,14 +78,27 @@ const Inbound: React.FC = () => {
   useEffect(() => {
     const loadInbounds = async () => {
       try {
-        const data = await inboundService.getAll();
-        // 기존 데이터에 ID가 없으면 추가
-        const dataWithIds = data.map((item: any, index: number) => ({
+        // 입고 데이터와 기초코드 데이터를 동시에 가져오기
+        const [inboundData, baseCodeData] = await Promise.all([
+          inboundService.getAll(),
+          baseCodeService.getAll()
+        ]);
+
+        // 기초코드를 코드별로 매핑하여 빠른 검색을 위한 맵 생성
+        const baseCodeMap = baseCodeData.reduce((map: any, baseCode: any) => {
+          map[baseCode.code] = baseCode;
+          return map;
+        }, {});
+
+        // 입고 데이터에 기초코드의 이름 추가
+        const dataWithNamesAndIds = inboundData.map((item: any, index: number) => ({
           ...item,
-          id: item.id || `existing_${Date.now()}_${index}`
+          id: item.id || `existing_${Date.now()}_${index}`,
+          stock_name: baseCodeMap[item.stock_code]?.name || item.stock_code // 기초코드에서 이름 가져오기, 없으면 코드 그대로 사용
         }));
-        setTableData(dataWithIds);
-        setFilteredData(dataWithIds);
+
+        setTableData(dataWithNamesAndIds);
+        setFilteredData(dataWithNamesAndIds);
       } catch (error) {
         console.error('Error loading inbounds:', error);
         setNotification({
@@ -95,6 +111,17 @@ const Inbound: React.FC = () => {
 
     loadInbounds();
   }, []);
+
+  // 알림 메시지 자동 숨김
+  useEffect(() => {
+    if (notification.open) {
+      const timer = setTimeout(() => {
+        setNotification(prev => ({ ...prev, open: false }));
+      }, 3000); // 3초 후 자동 숨김
+
+      return () => clearTimeout(timer);
+    }
+  }, [notification.open]);
   const handleSearch = (searchText: string, startDate?: string, endDate?: string) => {
     let filtered = [...tableData];
     
@@ -135,6 +162,7 @@ const Inbound: React.FC = () => {
           ? {
               ...item,
               stock_code: baseCode.code,
+              stock_name: baseCode.name,
               unit: baseCode.unit,
               max_use_period: baseCode.max_use_period
             }
@@ -146,6 +174,7 @@ const Inbound: React.FC = () => {
           ? {
               ...item,
               stock_code: baseCode.code,
+              stock_name: baseCode.name,
               unit: baseCode.unit,
               max_use_period: baseCode.max_use_period
             }
@@ -159,7 +188,8 @@ const Inbound: React.FC = () => {
           const row = tabulator.getRow(selectedRowId);
           if (row) {
             row.update({
-              stock_code: baseCode.code,
+              stock_code: baseCode.code,  
+              stock_name: baseCode.name,
               unit: baseCode.unit,
               max_use_period: baseCode.max_use_period
             });
@@ -180,28 +210,43 @@ const Inbound: React.FC = () => {
   };
 
   const columns: any = [
-    {
-      title: "재고코드",
-      field: "stock_code",
-      width: 150,
-      editor: "input",
+    {title: "재고명", field: "stock_name", width: 150, hozAlign: "center", titleHozAlign: "center",
       cellClick: (e: any, cell: any) => {
         const row = cell.getRow();
         const rowData = row.getData();
         console.log("Clicked row data:", rowData);
         handleStockCodeClick(rowData.id);
       },
+    },
+    {
+      title: "재고코드",
+      field: "stock_code",
+      width: 150,
+      editor: "input",
+      hozAlign: "center",
+      titleHozAlign: "center",
       cellEdited: (cell: any) => {
         const row = cell.getRow();
         const data = row.getData();
+        const field = cell.getField();
+        const value = cell.getValue();
+        
+        console.log("✅ 재고코드 편집됨:", field, "→", value);
+        
+        // React state 업데이트
+        setTableData(prev => prev.map(item => 
+          item.id === data.id ? { ...item, [field]: value, rowStatus: data.rowStatus === "INSERT" ? "INSERT" : "UPDATE" } : item
+        ));
+        setFilteredData(prev => prev.map(item => 
+          item.id === data.id ? { ...item, [field]: value, rowStatus: data.rowStatus === "INSERT" ? "INSERT" : "UPDATE" } : item
+        ));
+        
         // INSERT 상태에서는 rowStatus를 변경하지 않음
-        if (data.rowStatus === "INSERT") {
-          console.log("INSERT 상태에서는 상태 변경하지 않음");
-          return;
+        if (data.rowStatus !== "INSERT") {
+          row.update({ rowStatus: "UPDATE" });
         }
-        row.update({ rowStatus: "UPDATE" });
-        console.log("✅ 편집됨:", cell.getField(), "→", cell.getValue());
-      }
+      },
+      visible: false,
     },
 
     {
@@ -209,6 +254,8 @@ const Inbound: React.FC = () => {
       field: "inbound_date",
       width: 150,
       editor: "date",
+      hozAlign: "center",
+      titleHozAlign: "center",
       formatter: (cell: any) => {
         // Date 객체 → yyyy-MM-dd 형식으로 표시
         const value = cell.getValue();
@@ -246,16 +293,39 @@ const Inbound: React.FC = () => {
       field: "quantity",
       width: 150,
       editor: "number",
+      hozAlign: "right",
+      titleHozAlign: "center",
+      mutator: (value: any) => {
+        // 숫자 문자열을 숫자로 변환
+        if (typeof value === "string" && value.trim() !== "") {
+          const numValue = parseFloat(value);
+          return isNaN(numValue) ? 0 : numValue;
+        }
+        if (typeof value === "number") {
+          return value;
+        }
+        return 0;
+      },
       cellEdited: (cell: any) => {
         const row = cell.getRow();
         const data = row.getData();
+        const field = cell.getField();
+        const value = cell.getValue();
+        
+        console.log("✅ 수량 편집됨:", field, "→", value, "타입:", typeof value);
+        
+        // React state 업데이트
+        setTableData(prev => prev.map(item => 
+          item.id === data.id ? { ...item, [field]: value, rowStatus: data.rowStatus === "INSERT" ? "INSERT" : "UPDATE" } : item
+        ));
+        setFilteredData(prev => prev.map(item => 
+          item.id === data.id ? { ...item, [field]: value, rowStatus: data.rowStatus === "INSERT" ? "INSERT" : "UPDATE" } : item
+        ));
+        
         // INSERT 상태에서는 rowStatus를 변경하지 않음
-        if (data.rowStatus === "INSERT") {
-          console.log("INSERT 상태에서는 상태 변경하지 않음");
-          return;
+        if (data.rowStatus !== "INSERT") {
+          row.update({ rowStatus: "UPDATE" });
         }
-        row.update({ rowStatus: "UPDATE" });
-        console.log("✅ 편집됨:", cell.getField(), "→", cell.getValue());
       }
     },
     {
@@ -263,6 +333,8 @@ const Inbound: React.FC = () => {
       field: "unit",
       width: 100,
       editor: "input",
+      hozAlign: "center",
+      titleHozAlign: "center",
       cellEdited: (cell: any) => {
         const row = cell.getRow();
         const data = row.getData();
@@ -275,14 +347,7 @@ const Inbound: React.FC = () => {
         console.log("✅ 편집됨:", cell.getField(), "→", cell.getValue());
       }
     },
-    {
-      title: "최초입고수량",
-      field: "initialQuantity",
-      width: 130,
-      editor: "number",
-      cellEdited: (cell: any) => {
-      } },
-    { title: "비고", field: "remark", width: 200, editor: "input",      cellEdited: (cell: any) => {
+    { title: "비고", field: "remark", width: 500, editor: "input", hozAlign: "center", titleHozAlign: "center",      cellEdited: (cell: any) => {
         const row = cell.getRow();
         const data = row.getData();
         // INSERT 상태에서는 rowStatus를 변경하지 않음
@@ -293,13 +358,15 @@ const Inbound: React.FC = () => {
         row.update({ rowStatus: "UPDATE" });
         console.log("✅ 편집됨:", cell.getField(), "→", cell.getValue());
       } },
-    { title: "최종수정일", field: "lastUpdated", width: 150 },
-    { title: "상태", field: "rowStatus", width: 100 },
+    { title: "최종수정일", field: "lastUpdated", width: 150, hozAlign: "center", titleHozAlign: "center",visible: false },
+    { title: "상태", field: "rowStatus", width: 100, hozAlign: "center", titleHozAlign: "center",visible: false },
     {
       title: "삭제",
       field: "delete",
       hozAlign: "center",
-      width: 60,
+      titleHozAlign: "center",
+      frozen: true,
+      width: 30,
       formatter: () => "🗑",
       cellClick: (e: any, cell: any) => {
         const row = cell.getRow();
@@ -323,6 +390,7 @@ const Inbound: React.FC = () => {
     const newRow: InboundItem = {
       id: `row_${Date.now()}_${tableData.length}`, // 고유 ID 생성
       stock_code: "",
+      stock_name: "", // 재고명 추가
       inbound_date: new Date(),
       quantity: 0,
       unit: "",
@@ -384,17 +452,70 @@ const Inbound: React.FC = () => {
               variant="gradient" 
               color="success"
               sx={{ fontSize: 14, fontWeight: 600 }}
-              onClick={() => {
-                const filteredDataToSave = tableData.filter(item => item.rowStatus !== "" && item.rowStatus !== undefined);
-                const invalidItems = filteredDataToSave.filter(item => {
-                  return !item.stock_code || item.stock_code.trim() === '' ||
-                         typeof item.quantity !== 'number' || item.quantity < 0;
-                });
-                // if (invalidItems.length > 0) {
-                //   alert('필수 필드가 누락되었거나 잘못된 값이 있습니다');
-                //   return;
-                // }
-                inboundService.saveStock(filteredDataToSave);
+              onClick={async () => {
+                try {
+                  const filteredDataToSave = tableData.filter(item => item.rowStatus !== "" && item.rowStatus !== undefined);
+                  
+                  if (filteredDataToSave.length === 0) {
+                    setNotification({
+                      open: true,
+                      message: '저장할 데이터가 없습니다.',
+                      type: 'info'
+                    });
+                    return;
+                  }
+
+                  // 디버깅을 위한 콘솔 로그
+                  console.log('저장할 데이터:', filteredDataToSave);
+
+                  const invalidItems = filteredDataToSave.filter(item => {
+                    const stockCodeValid = item.stock_code && item.stock_code.trim() !== '';
+                    const quantityValid = (typeof item.quantity === 'number' && item.quantity > 0) || 
+                                        (typeof item.quantity === 'string' && parseFloat(item.quantity) > 0);
+                    
+                    console.log(`Item ${item.id}: stock_code=${item.stock_code}, quantity=${item.quantity}, stockCodeValid=${stockCodeValid}, quantityValid=${quantityValid}`);
+                    
+                    return !stockCodeValid || !quantityValid;
+                  });
+                  
+                  if (invalidItems.length > 0) {
+                    console.log('검증 실패한 항목들:', invalidItems);
+                    setNotification({
+                      open: true,
+                      message: `필수 필드가 누락되었거나 잘못된 값이 있습니다. (재고코드, 입고수량을 확인해주세요) - ${invalidItems.length}개 항목`,
+                      type: 'error'
+                    });
+                    return;
+                  }
+
+                  await inboundService.saveStock(filteredDataToSave);
+                  
+                  // 성공 시 알림 메시지 표시
+                  setNotification({
+                    open: true,
+                    message: '입고 데이터가 성공적으로 저장되었습니다!',
+                    type: 'success'
+                  });
+
+                  // 저장된 데이터의 rowStatus 초기화
+                  setTableData(prev => prev.map(item => 
+                    filteredDataToSave.find(saved => saved.id === item.id) 
+                      ? { ...item, rowStatus: "" }
+                      : item
+                  ));
+                  setFilteredData(prev => prev.map(item => 
+                    filteredDataToSave.find(saved => saved.id === item.id) 
+                      ? { ...item, rowStatus: "" }
+                      : item
+                  ));
+                } catch (error) {
+                  console.error('입고 저장 실패:', error);
+                  setNotification({
+                    open: true,
+                    message: '입고 데이터 저장에 실패했습니다.',
+                    type: 'error'
+                  });
+                }
               }}
             >
               입고 저장
@@ -434,6 +555,25 @@ const Inbound: React.FC = () => {
           '& .tabulator-row': {
             backgroundColor: 'white !important',
           },
+          '& .tabulator-cell input': {
+            color: '#000000 !important',
+            backgroundColor: 'white !important',
+          },
+          '& .tabulator-cell input:focus': {
+            color: '#000000 !important',
+            backgroundColor: 'white !important',
+          },
+          '& .tabulator-editor input': {
+            color: '#000000 !important',
+            backgroundColor: 'white !important',
+          },
+          '& .tabulator-editor input:focus': {
+            color: '#000000 !important',
+            backgroundColor: 'white !important',
+          },
+          '& .tabulator-cell': {
+            color: '#000000 !important',
+          },
           '& .tabulator-row:hover': {
             backgroundColor: '#f5f5f5 !important',
           },
@@ -447,6 +587,12 @@ const Inbound: React.FC = () => {
             backgroundColor: '#ffebee !important',
             textDecoration: 'line-through',
             opacity: 0.6,
+          },
+          '& .insert-row': {
+            backgroundColor: '#e3f2fd !important', // 파란색 배경 (INSERT)
+          },
+          '& .update-row': {
+            backgroundColor: '#e8f5e9 !important', // 초록색 배경 (UPDATE)
           }
         }}>
           <ReactTabulator
@@ -464,6 +610,22 @@ const Inbound: React.FC = () => {
               pagination: false,
               virtualDom: true,
               virtualDomBuffer: 50,
+              rowFormatter: (row: any) => {
+                const data = row.getData();
+                const element = row.getElement();
+                
+                // 기존 클래스 제거
+                element.classList.remove("insert-row", "update-row", "deleted-row");
+                
+                // rowStatus에 따라 클래스 추가
+                if (data.rowStatus === "INSERT") {
+                  element.classList.add("insert-row");
+                } else if (data.rowStatus === "UPDATE") {
+                  element.classList.add("update-row");
+                } else if (data.rowStatus === "DELETE") {
+                  element.classList.add("deleted-row");
+                }
+              }
             }}
           />
         </MDBox>
@@ -475,6 +637,28 @@ const Inbound: React.FC = () => {
         onClose={() => setBaseCodeModalOpen(false)}
         onSelect={handleBaseCodeSelect}
       />
+
+      {/* 알림 메시지 */}
+      {notification.open && (
+        <div 
+          className={`notification notification-${notification.type}`}
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            padding: '15px 20px',
+            borderRadius: '4px',
+            color: 'white',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+            zIndex: 1100,
+            backgroundColor: notification.type === 'success' ? '#43a047' : 
+                           notification.type === 'error' ? '#e53935' : '#1e88e5',
+            animation: 'fadeIn 0.3s ease-in-out'
+          }}
+        >
+          {notification.message}
+        </div>
+      )}
     </MDBox>
   );
 };

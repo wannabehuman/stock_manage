@@ -88,9 +88,9 @@ const RecentStock: React.FC = () => {
   };
 
   const columns = [
-    { title: "ID", field: "id", width: 100 },
-    { title: "재고명", field: "name", editor: "input", width: 200 },
-    { title: "출고수량", field: "outQuantity", width: 100, editor: "number", cellEdited: (cell: any) => {
+    { title: "ID", field: "id", width: 100, hozAlign: "center", titleHozAlign: "center" },
+    { title: "재고명", field: "name", editor: "input", width: 200, hozAlign: "center", titleHozAlign: "center" },
+    { title: "출고수량", field: "outQuantity", width: 100, editor: "number", hozAlign: "right", titleHozAlign: "center", cellEdited: (cell: any) => {
        const row = cell.getRow();
        const data = row.getData();
        if (data.rowStatus !== "INSERT") {
@@ -98,7 +98,7 @@ const RecentStock: React.FC = () => {
        }
        console.log("✅ 편집됨:", cell.getField(), "→", cell.getValue());
      } },
-    { title: "재고수량", field: "stockQuantity", width: 100, editor: "number", cellEdited: (cell: any) => {
+    { title: "재고수량", field: "stockQuantity", width: 100, editor: "number", hozAlign: "right", titleHozAlign: "center", cellEdited: (cell: any) => {
         const row = cell.getRow();
         const data = row.getData();
         if (data.rowStatus !== "INSERT") {
@@ -106,7 +106,7 @@ const RecentStock: React.FC = () => {
         }
         console.log("✅ 편집됨:", cell.getField(), "→", cell.getValue());
       } },
-    { title: "최초입고수량", field: "initialQuantity", width: 130, editor: "number", cellEdited: (cell: any) => {
+    { title: "최초입고수량", field: "initialQuantity", width: 130, editor: "number", hozAlign: "right", titleHozAlign: "center", cellEdited: (cell: any) => {
         const row = cell.getRow();
         const data = row.getData();
         if (data.rowStatus !== "INSERT") {
@@ -114,16 +114,18 @@ const RecentStock: React.FC = () => {
         }
         console.log("✅ 편집됨:", cell.getField(), "→", cell.getValue());
       } },
-    { title: "단위", field: "unit", width: 100, editor: "input" },
-    { title: "위치", field: "location", width: 100, editor: "input" },
+    { title: "단위", field: "unit", width: 100, editor: "input", hozAlign: "center", titleHozAlign: "center" },
+    { title: "위치", field: "location", width: 100, editor: "input", hozAlign: "center", titleHozAlign: "center" },
     { 
       title: "출고이력", 
       field: "lastUpdated",
       width: 100,
+      hozAlign: "center",
+      titleHozAlign: "center",
       formatter: () => "🔍",
       cellClick: handleHistoryClick
     },
-    { title: "재고수정사유", field: "stockUpdateReason", width: 100,editor:"input",
+    { title: "재고수정사유", field: "stockUpdateReason", width: 100, editor:"input", hozAlign: "center", titleHozAlign: "center",
       cellEdited: (cell: any) => {
         const row = cell.getRow();
         const data = row.getData();
@@ -133,11 +135,12 @@ const RecentStock: React.FC = () => {
         console.log("✅ 편집됨:", cell.getField(), "→", cell.getValue());
       } 
      },
-    { title: "행상태", field: "rowStatus", width: 100 },
+    { title: "행상태", field: "rowStatus", width: 100, hozAlign: "center", titleHozAlign: "center" },
     {
       title: "삭제",
       field: "delete",
       hozAlign: "center",
+      titleHozAlign: "center",
       width: 60,
       formatter: () => "🗑",
       cellClick: (e: any, cell: any) => {
