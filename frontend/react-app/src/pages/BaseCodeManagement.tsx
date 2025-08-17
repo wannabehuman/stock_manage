@@ -150,15 +150,14 @@ const BaseCodeManagement: React.FC = () => {
   // DataGrid 열 정의
   const columns = [
     { field: 'code', headerName: '코드', width: 150 },
-    { field: 'name', headerName: '이름', width: 200 },
+    { field: 'name', headerName: '이름', width: 150 },
     { field: 'category', headerName: '카테고리', width: 150 },
-    { field: 'unit', headerName: '단위', width: 80 },
-    { field: 'usePeriod', headerName: '사용기간', width: 100 },
-    { field: 'max_use_period', headerName: '최대 사용 기간', width: 150 },
-    { field: 'remark', headerName: '비고', width: 300, flex: 1 },
+    { field: 'unit', headerName: '단위', width: 100 },
+    { field: 'max_use_period', headerName: '최대사용기간', width: 150 },
+    { field: 'remark', headerName: '비고', width: 500 },
     { 
       field: 'isAlert', 
-      headerName: '알림 여부', 
+      headerName: '알림', 
       width: 100,
       renderCell: (params: any) => {
         return params.value ? (
@@ -171,7 +170,7 @@ const BaseCodeManagement: React.FC = () => {
     {
       field: 'actions',
       headerName: '관리',
-      width: 200,
+      width: 100,
       sortable: false,
       filterable: false,
       renderCell: (params: any) => {
@@ -181,7 +180,7 @@ const BaseCodeManagement: React.FC = () => {
               variant="outlined"
               color="primary"
               size="small"
-              sx={{ mr: 1, fontSize: '0.75rem', py: 0.5 }}
+              sx={{ mr: 1, fontSize: '0.7rem', py: 0.3, px: 0.5, minWidth: 'auto' }}
               onClick={() => handleEdit(params.row.code)}
               >
               수정
@@ -190,10 +189,10 @@ const BaseCodeManagement: React.FC = () => {
               variant="outlined"
               color="error"
               size="small"
-              sx={{ fontSize: '0.75rem', py: 0.5 }}
+              sx={{ fontSize: '0.7rem', py: 0.3, px: 0.5, minWidth: 'auto' }}
               onClick={() => handleDelete(params.row.code)}
               >
-              삭제
+              🗑
             </Button>
           </>
         );
@@ -337,6 +336,8 @@ const BaseCodeManagement: React.FC = () => {
   
   return (
     <MDBox py={3} sx={{ 
+      minWidth: '1200px',
+      overflowX: 'auto',
       '& *': { 
         color: '#000000 !important' 
       },
@@ -395,13 +396,12 @@ const BaseCodeManagement: React.FC = () => {
       </Card>
 
       <Card sx={{ 
-        p: { xs: 1, sm: 2, md: 3 }, 
-        height: { xs: '50vh', sm: '55vh', md: '65vh' },
+        p: 3, 
+        height: '68vh',
         backgroundColor: 'white',
-        borderRadius: { xs: 0, sm: 2 },
         display: 'flex',
         flexDirection: 'column'
-      }} className="responsive-card">
+      }}>
         <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <MDTypography variant="h6" fontWeight="medium">
             기준코드 관리
@@ -418,12 +418,14 @@ const BaseCodeManagement: React.FC = () => {
         </MDBox>
         <MDBox sx={{ 
           flex: 1,
-          overflow: 'hidden',
-          minHeight: 300, // 최소 높이 조정
+          overflow: 'auto',
+          minHeight: 300,
+          minWidth: '1200px',
           '& .MuiDataGrid-root': {
             border: '1px solid #eee',
             fontSize: '0.875rem',
-            backgroundColor: 'white !important'
+            backgroundColor: 'white !important',
+            minWidth: '1200px'
           },
           '& .MuiDataGrid-cell': {
             outline: 'none !important', // 포커스 아웃라인 제거

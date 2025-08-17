@@ -32,21 +32,7 @@ interface OutboundItem {
 
 const Outbound: React.FC = () => {
   const tableRef = useRef<any>(null);
-  const [tableData, setTableData] = useState<OutboundItem[]>([
-    {
-      id: `row_${Date.now()}_0`, // 초기 행에 고유 ID
-      inboundId: "",
-      inboundName: "", // 재고명 추가
-      inbound_date: "",
-      inboundQuantity: 0,
-      outboundDate: new Date().toISOString().split('T')[0],
-      outboundQuantity: 0,
-      unit: "",
-      remark: "",
-      status: "PENDING",
-      rowStatus: "INSERT"
-    }
-  ]);
+  const [tableData, setTableData] = useState<OutboundItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [inboundModalOpen, setInboundModalOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
@@ -65,7 +51,7 @@ const Outbound: React.FC = () => {
     if (notification.open) {
       const timer = setTimeout(() => {
         setNotification(prev => ({ ...prev, open: false }));
-      }, 3000); // 3초 후 자동 숨김
+      }, 5000); // 5초 후 자동 숨김
 
       return () => clearTimeout(timer);
     }
@@ -106,7 +92,25 @@ const Outbound: React.FC = () => {
         rowStatus: ""
       }));
       
-      setTableData(dataWithIds);
+      // 데이터가 없으면 빈 행 하나 추가
+      if (dataWithIds.length === 0) {
+        const emptyRow: OutboundItem = {
+          id: `row_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          inboundId: "",
+          inboundName: "",
+          inbound_date: "",
+          inboundQuantity: 0,
+          outboundDate: new Date().toISOString().split('T')[0],
+          outboundQuantity: 0,
+          unit: "",
+          remark: "",
+          status: "PENDING",
+          rowStatus: "INSERT"
+        };
+        setTableData([emptyRow]);
+      } else {
+        setTableData(dataWithIds);
+      }
     } catch (error) {
       console.error('Error loading outbound data:', error);
     } finally {
@@ -198,7 +202,7 @@ const Outbound: React.FC = () => {
     { 
       title: "재고명", 
       field: "inboundName", 
-      width: 200,
+      width: 150,
       hozAlign: "center",
       titleHozAlign: "center",
       editor: false, // 편집 불가
@@ -211,20 +215,27 @@ const Outbound: React.FC = () => {
     { 
       title: "입고일자", 
       field: "inbound_date", 
-      width: 120,
+      width: 150,
       hozAlign: "center",
       titleHozAlign: "center",
-      editor: false
+      editor: false,
     },
     { 
       title: "출고일자", 
       field: "outboundDate", 
-      width: 120,
+      width: 150,
       hozAlign: "center",
       titleHozAlign: "center",
       editor: (cell: any) => {
         const rowData = cell.getRow().getData();
         return rowData.status === 'COMPLETED' ? false : "date";
+      },
+      formatter: (cell: any) => {
+        const value = cell.getValue();
+        if (!value || value === "") {
+          return "📅 날짜 선택";
+        }
+        return value;
       },
       cellEdited: (cell: any) => {
         const row = cell.getRow();
@@ -238,7 +249,7 @@ const Outbound: React.FC = () => {
     { 
       title: "출고수량", 
       field: "outboundQuantity", 
-      width: 100,
+      width: 150,
       hozAlign: "right",
       titleHozAlign: "center",
       editor: "number",
@@ -254,7 +265,7 @@ const Outbound: React.FC = () => {
     { 
       title: "단위", 
       field: "unit", 
-      width: 80,
+      width: 100,
       hozAlign: "center",
       titleHozAlign: "center",
       editor: false
@@ -262,8 +273,8 @@ const Outbound: React.FC = () => {
     { 
       title: "비고", 
       field: "remark", 
-      minWidth: 500,
-      hozAlign: "center",
+      width: 500,
+      hozAlign: "left",
       titleHozAlign: "center",
       editor: (cell: any) => {
         const rowData = cell.getRow().getData();
@@ -304,18 +315,26 @@ const Outbound: React.FC = () => {
       hozAlign: "center",
       titleHozAlign: "center",
       frozen: true,
-      width: 30,
+      width: 50,
       formatter: () => "🗑",
       cellClick: (e: any, cell: any) => {
         const row = cell.getRow();
-        if(row.getData().rowStatus === "INSERT") {
+        const rowData = row.getData();
+        
+        if(rowData.rowStatus === "INSERT") {
+          // INSERT 상태인 행은 완전히 제거
           row.delete();
-        } else if(row.getData().rowStatus === "DELETE") {
+          setTableData((prev) => prev.filter((item) => item.id !== rowData.id));
+        } else if(rowData.rowStatus === "DELETE") {
+          // DELETE 상태를 취소하고 원래 상태로 복구
           row.update({ rowStatus: "" });
           row.getElement().classList.remove("deleted-row");
+          setTableData((prev) => prev.map((item) => item.id === rowData.id ? { ...item, rowStatus: "" } : item));
         } else {
+          // 기존 행을 DELETE 상태로 표시
           row.update({ rowStatus: "DELETE" });
           row.getElement().classList.add("deleted-row");
+          setTableData((prev) => prev.map((item) => item.id === rowData.id ? { ...item, rowStatus: "DELETE" } : item));
         }
       }
     },
@@ -324,7 +343,7 @@ const Outbound: React.FC = () => {
   // 행 추가 핸들러
   const handleAddRow = () => {
     const newRow: OutboundItem = {
-      id: `row_${Date.now()}_${tableData.length}`,
+      id: `row_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       inboundId: "",
       inboundName: "", // 재고명 추가
       inbound_date: "",
@@ -402,19 +421,18 @@ const Outbound: React.FC = () => {
   };
 
   return (
-    <MDBox py={3}>
+    <MDBox py={3} sx={{ minWidth: '1200px', overflowX: 'auto' }}>
       <Card sx={{ p: 3, mb: 3, backgroundColor: 'white' }}>
         <StockSearch onSearch={loadOutboundData} />
       </Card>
 
       <Card sx={{ 
-        p: { xs: 1, sm: 2, md: 3 }, 
-        height: { xs: '50vh', sm: '55vh', md: '65vh' },
+        p: 3, 
+        height: '68vh',
         backgroundColor: 'white',
-        borderRadius: { xs: 0, sm: 2 },
         display: 'flex',
         flexDirection: 'column'
-      }} className="responsive-card">
+      }}>
         <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <MDTypography variant="h6" fontWeight="medium">
             입고된 품목을 기준으로 출고품을 등록해주세요!
@@ -435,14 +453,15 @@ const Outbound: React.FC = () => {
 
         <MDBox sx={{ 
           flex: 1,
-          overflow: 'hidden',
+          overflow: 'auto',
+          minWidth: '1200px',
           '& .tabulator': {
             backgroundColor: 'white !important',
             border: '1px solid #eee',
             width: '100% !important',
             height: '100% !important',
             fontSize: { xs: '12px', sm: '13px', md: '14px' },
-            overflow: 'auto',
+            minWidth: '1200px',
           },
           '& .tabulator-tableholder': {
             overflow: 'auto !important',
@@ -460,10 +479,12 @@ const Outbound: React.FC = () => {
           },
           '& .tabulator-cell': {
             backgroundColor: 'white !important',
-            borderRight: '1px solid #dee2e6',
+            borderRight: 'none !important',
+            borderBottom: 'none !important',
           },
           '& .tabulator-row': {
-            backgroundColor: 'white !important',
+            backgroundColor: 'white',
+            borderBottom: 'none !important',
           },
           '& .tabulator-cell input': {
             color: '#000000 !important',
@@ -481,28 +502,60 @@ const Outbound: React.FC = () => {
             color: '#000000 !important',
             backgroundColor: 'white !important',
           },
-          '& .tabulator-cell': {
+          '& .tabulator-editor input[type="date"]': {
+            position: 'relative',
             color: '#000000 !important',
+            backgroundColor: 'white !important',
+            width: '100%',
+            padding: '8px 30px 8px 8px',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          },
+          '& .tabulator-editor input[type="date"]::-webkit-calendar-picker-indicator': {
+            position: 'absolute',
+            right: '8px',
+            cursor: 'pointer',
+            fontSize: '18px',
+            opacity: 1,
+            color: '#666',
+            background: 'none',
+            border: 'none',
+            width: '20px',
+            height: '20px',
+          },
+          '& .tabulator-editor input[type="date"]:focus': {
+            outline: '2px solid #1976d2',
+            outlineOffset: '-1px',
           },
           '& .tabulator-row:hover': {
             backgroundColor: '#f5f5f5 !important',
           },
           '& .tabulator-row-even': {
-            backgroundColor: 'white !important',
+            backgroundColor: 'white',
           },
           '& .tabulator-row-odd': {
-            backgroundColor: 'white !important',
+            backgroundColor: 'white',
           },
-          '& .deleted-row': {
+          '& .tabulator-row.deleted-row': {
             backgroundColor: '#ffebee !important',
             textDecoration: 'line-through',
             opacity: 0.6,
           },
-          '& .insert-row': {
+          '& .tabulator-row.deleted-row .tabulator-cell': {
+            backgroundColor: '#ffebee !important',
+          },
+          '& .tabulator-row.insert-row': {
             backgroundColor: '#e3f2fd !important', // 파란색 배경 (INSERT)
           },
-          '& .update-row': {
+          '& .tabulator-row.insert-row .tabulator-cell': {
+            backgroundColor: '#e3f2fd !important',
+          },
+          '& .tabulator-row.update-row': {
             backgroundColor: '#e8f5e9 !important', // 초록색 배경 (UPDATE)
+          },
+          '& .tabulator-row.update-row .tabulator-cell': {
+            backgroundColor: '#e8f5e9 !important',
           }
         }}>
           <ReactTabulator
@@ -511,8 +564,8 @@ const Outbound: React.FC = () => {
             columns={columns}
             layout="fitDataStretch"
             options={{ 
-              movableRows: true, 
-              movableColumns: true,
+              movableRows: false, 
+              movableColumns: false,
               index: "id", // ID를 row index로 사용
               height: "100%",
               layoutColumnsOnNewData: true,

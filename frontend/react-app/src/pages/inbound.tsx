@@ -34,21 +34,7 @@ interface InboundItem {
 const Inbound: React.FC = () => {
   const tableRef = useRef<any>(null);
 
-  const [tableData, setTableData] = useState<InboundItem[]>([
-    {
-      id: `row_${Date.now()}_0`, // 고유 ID 생성
-      stock_code: "",
-      stock_name: "", // 재고명 추가
-      inbound_date: new Date(),
-      quantity: 0,
-      unit: "",
-      location: "",
-      max_use_period: 0,
-      remark: "",
-      lastUpdated: new Date().toISOString(),
-      rowStatus: "INSERT"
-    }
-  ]);
+  const [tableData, setTableData] = useState<InboundItem[]>([]);
 
   const [filteredData, setFilteredData] = useState<InboundItem[]>(tableData);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -74,41 +60,61 @@ const Inbound: React.FC = () => {
       setItemToDelete(null);
     }
   };
-  // 데이터 로딩
-  useEffect(() => {
-    const loadInbounds = async () => {
-      try {
-        // 입고 데이터와 기초코드 데이터를 동시에 가져오기
-        const [inboundData, baseCodeData] = await Promise.all([
-          inboundService.getAll(),
-          baseCodeService.getAll()
-        ]);
+  // 데이터 로딩 함수
+  const loadInbounds = async () => {
+    try {
+      // 입고 데이터와 기초코드 데이터를 동시에 가져오기
+      const [inboundData, baseCodeData] = await Promise.all([
+        inboundService.getAll(),
+        baseCodeService.getAll()
+      ]);
 
-        // 기초코드를 코드별로 매핑하여 빠른 검색을 위한 맵 생성
-        const baseCodeMap = baseCodeData.reduce((map: any, baseCode: any) => {
-          map[baseCode.code] = baseCode;
-          return map;
-        }, {});
+      // 기초코드를 코드별로 매핑하여 빠른 검색을 위한 맵 생성
+      const baseCodeMap = baseCodeData.reduce((map: any, baseCode: any) => {
+        map[baseCode.code] = baseCode;
+        return map;
+      }, {});
 
-        // 입고 데이터에 기초코드의 이름 추가
-        const dataWithNamesAndIds = inboundData.map((item: any, index: number) => ({
-          ...item,
-          id: item.id || `existing_${Date.now()}_${index}`,
-          stock_name: baseCodeMap[item.stock_code]?.name || item.stock_code // 기초코드에서 이름 가져오기, 없으면 코드 그대로 사용
-        }));
+      // 입고 데이터에 기초코드의 이름 추가
+      const dataWithNamesAndIds = inboundData.map((item: any, index: number) => ({
+        ...item,
+        id: item.id || `existing_${Date.now()}_${index}`,
+        stock_name: baseCodeMap[item.stock_code]?.name || item.stock_code // 기초코드에서 이름 가져오기, 없으면 코드 그대로 사용
+      }));
 
+      // 데이터가 없으면 빈 행 하나 추가
+      if (dataWithNamesAndIds.length === 0) {
+        const emptyRow: InboundItem = {
+          id: `row_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          stock_code: "",
+          stock_name: "",
+          inbound_date: new Date(),
+          quantity: 0,
+          unit: "",
+          location: "",
+          max_use_period: 0,
+          remark: "",
+          lastUpdated: new Date().toISOString(),
+          rowStatus: "INSERT"
+        };
+        setTableData([emptyRow]);
+        setFilteredData([emptyRow]);
+      } else {
         setTableData(dataWithNamesAndIds);
         setFilteredData(dataWithNamesAndIds);
-      } catch (error) {
-        console.error('Error loading inbounds:', error);
-        setNotification({
-          open: true,
-          message: '입고 데이터를 불러오는데 실패했습니다.',
-          type: 'error'
-        });
       }
-    };
+    } catch (error) {
+      console.error('Error loading inbounds:', error);
+      setNotification({
+        open: true,
+        message: '입고 데이터를 불러오는데 실패했습니다.',
+        type: 'error'
+      });
+    }
+  };
 
+  // 데이터 로딩
+  useEffect(() => {
     loadInbounds();
   }, []);
 
@@ -117,7 +123,7 @@ const Inbound: React.FC = () => {
     if (notification.open) {
       const timer = setTimeout(() => {
         setNotification(prev => ({ ...prev, open: false }));
-      }, 3000); // 3초 후 자동 숨김
+      }, 5000); // 5초 후 자동 숨김
 
       return () => clearTimeout(timer);
     }
@@ -259,6 +265,9 @@ const Inbound: React.FC = () => {
       formatter: (cell: any) => {
         // Date 객체 → yyyy-MM-dd 형식으로 표시
         const value = cell.getValue();
+        if (!value || value === "") {
+          return "📅 날짜 선택";
+        }
         if (!(value instanceof Date)) return value;
         return value.toISOString().slice(0, 10); // yyyy-MM-dd
       },
@@ -347,7 +356,7 @@ const Inbound: React.FC = () => {
         console.log("✅ 편집됨:", cell.getField(), "→", cell.getValue());
       }
     },
-    { title: "비고", field: "remark", width: 500, editor: "input", hozAlign: "center", titleHozAlign: "center",      cellEdited: (cell: any) => {
+    { title: "비고", field: "remark", width: 650, editor: "input", hozAlign: "left", titleHozAlign: "center",      cellEdited: (cell: any) => {
         const row = cell.getRow();
         const data = row.getData();
         // INSERT 상태에서는 rowStatus를 변경하지 않음
@@ -366,21 +375,29 @@ const Inbound: React.FC = () => {
       hozAlign: "center",
       titleHozAlign: "center",
       frozen: true,
-      width: 30,
+      width: 50,
       formatter: () => "🗑",
       cellClick: (e: any, cell: any) => {
         const row = cell.getRow();
-        if(row.getData().rowStatus === "INSERT") {
+        const rowData = row.getData();
+        
+        if(rowData.rowStatus === "INSERT") {
+          // INSERT 상태인 행은 완전히 제거
           row.delete();
-          // setTableData((prev) => prev.filter((item) => item.id !== row.id));
-        } else if(row.getData().rowStatus === "DELETE") {
+          setTableData((prev) => prev.filter((item) => item.id !== rowData.id));
+          setFilteredData((prev) => prev.filter((item) => item.id !== rowData.id));
+        } else if(rowData.rowStatus === "DELETE") {
+          // DELETE 상태를 취소하고 원래 상태로 복구
           row.update({ rowStatus: "" });
           row.getElement().classList.remove("deleted-row");
-          // setTableData((prev) => prev.filter((item) => item.id !== row.id));
+          setTableData((prev) => prev.map((item) => item.id === rowData.id ? { ...item, rowStatus: "" } : item));
+          setFilteredData((prev) => prev.map((item) => item.id === rowData.id ? { ...item, rowStatus: "" } : item));
         } else {
+          // 기존 행을 DELETE 상태로 표시
           row.update({ rowStatus: "DELETE" });
           row.getElement().classList.add("deleted-row");
-          // setTableData((prev) => prev.map((item) => item.id === row.id ? { ...item, rowStatus: "DELETE" } : item));
+          setTableData((prev) => prev.map((item) => item.id === rowData.id ? { ...item, rowStatus: "DELETE" } : item));
+          setFilteredData((prev) => prev.map((item) => item.id === rowData.id ? { ...item, rowStatus: "DELETE" } : item));
         }
       }
     },
@@ -388,7 +405,7 @@ const Inbound: React.FC = () => {
 
   const handleAddRow = () => {
     const newRow: InboundItem = {
-      id: `row_${Date.now()}_${tableData.length}`, // 고유 ID 생성
+      id: `row_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 완전히 고유한 ID 생성
       stock_code: "",
       stock_name: "", // 재고명 추가
       inbound_date: new Date(),
@@ -433,14 +450,19 @@ const Inbound: React.FC = () => {
 
 
   return (
-    <MDBox py={3}>
-      
-      <Card sx={{ p: 3, mb: 3, backgroundColor: 'white' }}>
-        <StockSearch onSearch={handleSearch} />
-      </Card>
+    <MDBox py={3} sx={{ minWidth: '1200px', overflowX: 'auto' }}>
+      <>
+        <Card sx={{ p: 3, mb: 3, backgroundColor: 'white' }}>
+          <StockSearch onSearch={handleSearch} />
+        </Card>
 
-      <Card sx={{ p: 3, height: '68vh', backgroundColor: 'white' }}>
-        <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Card sx={{ 
+          p: 3, 
+          height: '68vh', 
+          backgroundColor: 'white'
+        }}>
+        <>
+          <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <MDTypography variant="h6" fontWeight="medium">
             기초코드에 등록된 품목을 기준으로 입고품을 등록해주세요!
           </MDTypography>
@@ -497,17 +519,8 @@ const Inbound: React.FC = () => {
                     type: 'success'
                   });
 
-                  // 저장된 데이터의 rowStatus 초기화
-                  setTableData(prev => prev.map(item => 
-                    filteredDataToSave.find(saved => saved.id === item.id) 
-                      ? { ...item, rowStatus: "" }
-                      : item
-                  ));
-                  setFilteredData(prev => prev.map(item => 
-                    filteredDataToSave.find(saved => saved.id === item.id) 
-                      ? { ...item, rowStatus: "" }
-                      : item
-                  ));
+                  // 데이터 재조회
+                  await loadInbounds();
                 } catch (error) {
                   console.error('입고 저장 실패:', error);
                   setNotification({
@@ -521,22 +534,23 @@ const Inbound: React.FC = () => {
               입고 저장
             </MDButton>
           </MDBox>
-        </MDBox>
+          </MDBox>
 
-        <MDBox sx={{ 
+          <MDBox sx={{ 
           flex: 1,
-          overflow: 'hidden',
+          overflow: 'auto',
+          minWidth: '1200px',
           '& .tabulator': {
             backgroundColor: 'white !important',
             border: '1px solid #eee',
             width: '100% !important',
             height: '100% !important',
             fontSize: { xs: '12px', sm: '13px', md: '14px' },
-            overflow: 'auto',
+            minWidth: '1200px',
           },
           '& .tabulator-tableholder': {
             overflow: 'auto !important',
-            maxHeight: { xs: 'calåc(50vh - 120px)', sm: 'calc(55vh - 120px)', md: 'calc(65vh - 120px)' },
+            maxHeight: { xs: 'calc(50vh - 120px)', sm: 'calc(55vh - 120px)', md: 'calc(65vh - 120px)' },
           },
           '& .tabulator-header': {
             backgroundColor: 'white !important',
@@ -550,10 +564,12 @@ const Inbound: React.FC = () => {
           },
           '& .tabulator-cell': {
             backgroundColor: 'white !important',
-            borderRight: '1px solid #dee2e6',
+            borderRight: 'none !important',
+            borderBottom: 'none !important',
           },
           '& .tabulator-row': {
-            backgroundColor: 'white !important',
+            backgroundColor: 'white',
+            borderBottom: 'none !important',
           },
           '& .tabulator-cell input': {
             color: '#000000 !important',
@@ -571,28 +587,60 @@ const Inbound: React.FC = () => {
             color: '#000000 !important',
             backgroundColor: 'white !important',
           },
-          '& .tabulator-cell': {
+          '& .tabulator-editor input[type="date"]': {
+            position: 'relative',
             color: '#000000 !important',
+            backgroundColor: 'white !important',
+            width: '100%',
+            padding: '8px 30px 8px 8px',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          },
+          '& .tabulator-editor input[type="date"]::-webkit-calendar-picker-indicator': {
+            position: 'absolute',
+            right: '8px',
+            cursor: 'pointer',
+            fontSize: '18px',
+            opacity: 1,
+            color: '#666',
+            background: 'none',
+            border: 'none',
+            width: '20px',
+            height: '20px',
+          },
+          '& .tabulator-editor input[type="date"]:focus': {
+            outline: '2px solid #1976d2',
+            outlineOffset: '-1px',
           },
           '& .tabulator-row:hover': {
             backgroundColor: '#f5f5f5 !important',
           },
           '& .tabulator-row-even': {
-            backgroundColor: 'white !important',
+            backgroundColor: 'white',
           },
           '& .tabulator-row-odd': {
-            backgroundColor: 'white !important',
+            backgroundColor: 'white',
           },
-          '& .deleted-row': {
+          '& .tabulator-row.deleted-row': {
             backgroundColor: '#ffebee !important',
             textDecoration: 'line-through',
             opacity: 0.6,
           },
-          '& .insert-row': {
+          '& .tabulator-row.deleted-row .tabulator-cell': {
+            backgroundColor: '#ffebee !important',
+          },
+          '& .tabulator-row.insert-row': {
             backgroundColor: '#e3f2fd !important', // 파란색 배경 (INSERT)
           },
-          '& .update-row': {
+          '& .tabulator-row.insert-row .tabulator-cell': {
+            backgroundColor: '#e3f2fd !important',
+          },
+          '& .tabulator-row.update-row': {
             backgroundColor: '#e8f5e9 !important', // 초록색 배경 (UPDATE)
+          },
+          '& .tabulator-row.update-row .tabulator-cell': {
+            backgroundColor: '#e8f5e9 !important',
           }
         }}>
           <ReactTabulator
@@ -601,8 +649,8 @@ const Inbound: React.FC = () => {
             columns={columns}
             layout="fitDataStretch"
             options={{ 
-              movableRows: true, 
-              movableColumns: true,
+              movableRows: false, 
+              movableColumns: false,
               index: "id",
               height: "100%",
               layoutColumnsOnNewData: true,
@@ -614,32 +662,38 @@ const Inbound: React.FC = () => {
                 const data = row.getData();
                 const element = row.getElement();
                 
+                console.log("Row formatter - ID:", data.id, "rowStatus:", data.rowStatus);
+                
                 // 기존 클래스 제거
                 element.classList.remove("insert-row", "update-row", "deleted-row");
                 
                 // rowStatus에 따라 클래스 추가
                 if (data.rowStatus === "INSERT") {
                   element.classList.add("insert-row");
+                  console.log("Added insert-row class to:", data.id);
                 } else if (data.rowStatus === "UPDATE") {
                   element.classList.add("update-row");
+                  console.log("Added update-row class to:", data.id);
                 } else if (data.rowStatus === "DELETE") {
                   element.classList.add("deleted-row");
+                  console.log("Added deleted-row class to:", data.id);
                 }
               }
             }}
           />
         </MDBox>
-      </Card>
+          </>
+        </Card>
 
-      {/* 기초정보 선택 모달 */}
-      <BaseCodeSelectionModal
+        {/* 기초정보 선택 모달 */}
+        <BaseCodeSelectionModal
         open={baseCodeModalOpen}
         onClose={() => setBaseCodeModalOpen(false)}
         onSelect={handleBaseCodeSelect}
-      />
+        />
 
-      {/* 알림 메시지 */}
-      {notification.open && (
+        {/* 알림 메시지 */}
+        {notification.open && (
         <div 
           className={`notification notification-${notification.type}`}
           style={{
@@ -657,8 +711,9 @@ const Inbound: React.FC = () => {
           }}
         >
           {notification.message}
-        </div>
-      )}
+          </div>
+        )}
+      </>
     </MDBox>
   );
 };
